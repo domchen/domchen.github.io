@@ -1,0 +1,78 @@
+# Site settings
+title: DomLib
+header-img: img/home-bg.jpg
+email: dom@domlib.com
+description: "关注移动游戏 Html5 Flash UI框架"
+baseurl: ""
+url: "http://domchen.github.io"
+
+
+# SNS settings
+RSS: true
+weibo_username:     domchen
+zhihu_username:     domchen
+github_username:    domchen
+#twitter_username:  domchen
+#facebook_username:  domchen
+
+
+# Build settings
+highlighter: pygments
+permalink: pretty
+paginate: 20
+exclude: ["less","node_modules","Gruntfile.js","package.json","README.md","LICENSE","Gemfile","Gemfile.lock"]
+anchorjs: true      # if you want to customize anchor. check out line:129 of `post.html`
+
+# Markdown settings
+# replace redcarpet to kramdown,
+# although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
+# document: http://jekyllrb.com/docs/configuration/#kramdown
+markdown: kramdown
+kramdown:
+  input: GFM        # use Github Flavored Markdown !important
+
+
+# Duoshuo settings
+# please set your own DuoShuo account in `post.html` and `about.html`
+useDuoshuo: true    # use both Comment and Share
+useShare: true      # use Comment only. seeing the Share component is depend on Comment so we can NOT use share only.
+
+
+# Todo: Analysis settings
+# Please set your own analysis account in `head.html`(Baidu) and `default.html`(QQ)
+useBaiduAnalysis: true
+useTencentAnalysis: false
+useGoogleAnalysis: false     # TODO
+
+
+# Sidebar settings
+sidebar: true
+sidebar-featured-tags: true
+sidebar-about-description: "一只程序猿。"
+sidebar-avatar: /img/avatar-dom.jpg     # use absolute URL.
+
+# Friends
+friends: [
+    {
+        title: "Bindiry",
+        href: "http://junnan.org/"
+    },{
+        title: "FeatherJ",
+        href: "http://featherj.org/"
+    },{
+        title: "HYQ",
+        href: "http://hyq.me/"
+    },{
+        title: "LifeStone",
+        href: "http://tgerm.org/"
+    },{
+        title: "Xsstomy",
+        href: "http://xsstomy.com/"
+    },{
+        title: "纸片儿",
+        href: "http://xzper.com/"
+    },{
+        title: "城市拓荒者",
+        href: "http://city-10.com/"
+    }
+]
