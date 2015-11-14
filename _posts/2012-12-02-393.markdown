@@ -15,7 +15,7 @@ tags:
         在Flex4里，spark组件的文本都是使用FTE呈现的。但mx组件却是使用传统的TextFiled呈现的。这里先不讨论这两种文本引擎哪种更好。如果你想在Flex里嵌入字体的时候，就会因为这个问题遇到极大的麻烦。因为FTE和TextFiled使用的嵌入字体格式正好是相反的，并且互不兼容。参考链接：[http://blog.csdn.net/tiangej/article/details/7543386](http://blog.csdn.net/tiangej/article/details/7543386)。也就是说你为其中一种文本嵌入字体，另一种就无法显示了。两种格式都嵌入，你又没法在全局设置字体名了。只能给每个组件指定个字体。总之是各种麻烦。其实Adobe给我们准备了FTE版的TextField替代类：mx.core.UIFTETextField，并且在底层做好了兼容处理(参考UIComponent.createInFontContext()方法)。开启方法很简单：在css里加一句全局样式设定即可：textFieldClass:ClassReference("mx.core.UIFTETextField")。这样就可以让mx的组件里也使用FTE文本了。完整代码如下：
 
     
-    [css]
+    
     
     @namespace s "library://ns.adobe.com/flex/spark";
     @namespace mx "library://ns.adobe.com/flex/mx";
@@ -30,4 +30,4 @@ tags:
     	fontFamily: myFontFamily;
     	textFieldClass:ClassReference("mx.core.UIFTETextField");
     }
-    [/css]
+    

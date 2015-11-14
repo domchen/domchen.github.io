@@ -198,13 +198,13 @@ UIPanelSkin.as
 根据这套机制分离出来的皮肤组件，可以发现它基本上全是静态化的，所以非常适合用XML来描述。我们可以把上面的UIPanelSkin.as改成下面的这个xml描述文件：
 
     
-    [xml]
+    
      
     <dx:skin width="400" xmlns:dx="http://www.flexlite.org/dxml/2012" height="300"> 
         <dx:label textcolor="0xFFFFFF" id="titleDisplay"></dx:label> 
         <dx:button right="0" id="closeButton"></dx:button> 
     </dx:skin>
-    [/xml]
+    
 
 
 Flex开发者一定对这个非常熟悉，这不就是传说中的MXML了吗？我只是改了下命名空间为FlexLite的dx="http://www.flexlite.org/dxml/2012"，写法格式与MXML完全一致。

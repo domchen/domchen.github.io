@@ -21,20 +21,22 @@ mxmlc 有个参数非常不错：-keep-generated-actionscript，可以把编译�
 
 解决办法就是编译时附加上以下的配置文件,设置下其他四个库的引用.加载配置文件的参数是：mxmlc -load-config+=config.xml
 
+    <?xml version="1.0"?>
+    <flex-config>
+    	<compiler>
+          <keep-generated-actionscript>false</keep-generated-actionscript>
+    	  <library-path>
+             <path-element>E:\Program\Flash\Flexlite\bin\Flexlite.swc</path-element>
+             <path-element>D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\core.swc</path-element>
+    		 <path-element>D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\authoringsupport.swc</path-element>
+    		 <path-element>D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\osmf.swc</path-element>
+    		 <path-element>D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\textLayout.swc</path-element>
+          </library-path>
+    	  <source-path>
+             <path-element>src</path-element>
+          </source-path>
+    	</compiler>
+    	<static-link-runtime-shared-libraries>true</static-link-runtime-shared-libraries>
+    </flex-config>
+
     
-    [xml]
-    
-    
-          false
-    
-             E:\Program\Flash\Flexlite\bin\Flexlite.swc
-             D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\core.swc
-    		 D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\authoringsupport.swc
-    		 D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\osmf.swc
-    		 D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\textLayout.swc
-    
-             src
-    
-    	true
-    
-    [/xml]
