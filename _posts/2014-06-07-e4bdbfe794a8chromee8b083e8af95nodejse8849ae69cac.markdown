@@ -15,20 +15,20 @@ npm install -g node-inspector
 
 2.然后用node命令执行需要调试的脚本，但是要加上–debug-brk参数，例如：node –debug-brk=5858 test.js
 
-[![](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs.jpg)](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs.jpg)
+[![](/uploads/2014/06/nodejs.jpg)](/uploads/2014/06/nodejs.jpg)
 
 脚本现在就已经断点在了第一行，并且在等待5858端口的监听程序启动。
 
 3.重启一个命令行窗口（注意是重启一个新的窗口！），然后执行：node-inspector
 
-[![](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs21.png)](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs21.png)
-<!-- more -->
+[![](/uploads/2014/06/nodejs21.png)](/uploads/2014/06/nodejs21.png)
+
 
 
 
 4.根据提示，在谷歌浏览器里输入地址就可以开始调试了：http://127.0.0.1:8080/debug?port=5858
 
-[![](http://blog.domlib.com/wp-content/uploads/2014/06/chrome.png)](http://blog.domlib.com/wp-content/uploads/2014/06/chrome.png)
+[![](/uploads/2014/06/chrome.png)](/uploads/2014/06/chrome.png)
 
 关于谷歌浏览器调试技巧，可以参考[这篇文章](http://han.guokai.blog.163.com/blog/static/136718271201321402514114/)
 

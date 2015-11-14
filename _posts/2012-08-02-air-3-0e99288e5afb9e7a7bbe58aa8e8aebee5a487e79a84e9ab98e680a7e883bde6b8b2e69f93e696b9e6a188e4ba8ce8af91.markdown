@@ -17,9 +17,9 @@ tags:
 
 ** **在上一篇文章中，我展示了如何正确地使用AIR3.0的GPU加速模式，能让你在移动设备上的性能提高500%的方法。现在我们把目标设定为：怎样能以同一种方式，在影片剪辑动画播放上获取更大的性能提升。你感觉性能提升4000%这个数字咋样？
 
-[![](http://blog.domlib.com/wp-content/uploads/2012/08/Fast-Rendering-in-AIR-Cached-SpiteSheet.jpg)](http://blog.domlib.com/wp-content/uploads/2012/08/Fast-Rendering-in-AIR-Cached-SpiteSheet.jpg)
+[![](/uploads/2012/08/Fast-Rendering-in-AIR-Cached-SpiteSheet.jpg)](/uploads/2012/08/Fast-Rendering-in-AIR-Cached-SpiteSheet.jpg)
 
-** **当我第一次看到这个运行结果时我都不敢相信自己的眼睛...我的IPad2竟然跑赢了我3.2Ghz的四核台式机CPU，并且是接近两倍的性能！欢迎来到移动设备GPU加速的世界...<!-- more -->
+** **当我第一次看到这个运行结果时我都不敢相信自己的眼睛...我的IPad2竟然跑赢了我3.2Ghz的四核台式机CPU，并且是接近两倍的性能！欢迎来到移动设备GPU加速的世界...
 
 ** **如果您还没有阅读过之前的那篇文章，简单介绍下将会帮助您明确我们下面用到的技术是什么。总结一下就是：首先，最基本的是要为每种素材(导出类或者嵌入素材)使用单一的bitmapData实例。我们将bitmapData缓存在类静态属性上，然后这个素材类的所有实例都将共享同一个bitmapData数据。
 
@@ -57,7 +57,7 @@ tags:
 ** **下载并安装Zoe：：[http://easeljs.com/zoe.html ](http://easeljs.com/zoe.html )
 
 ** **在Zoe里打开你刚刚导出的SWF文件，Zoe会自动检测边界，点击“Export”即可。
-[![](http://blog.domlib.com/wp-content/uploads/2012/08/zoeScreen.png)](http://blog.domlib.com/wp-content/uploads/2012/08/zoeScreen.png)
+[![](/uploads/2012/08/zoeScreen.png)](/uploads/2012/08/zoeScreen.png)
 
 ** **注意：Zoe是通过测量主时间轴来确定你的SpriteSheet中一共有多少帧。如果你把动画嵌套在一个影片剪辑里是可以的，但是要确保你的主时间轴帧长度要足够包含影片剪辑里的帧长度。
 
@@ -184,11 +184,11 @@ tags:
 **基准测试！**
 ** **在这次测试中，我将在保持帧率30fps的情况下不断添加动画数量，直到帧率下降。
 
-** **您可以下载这个Flash Builder项目自己运行一下:[MobileRenderTests.zip](http://blog.domlib.com/wp-content/uploads/2012/08/MobileRenderTests.zip)
+** **您可以下载这个Flash Builder项目自己运行一下:[MobileRenderTests.zip](/uploads/2012/08/MobileRenderTests.zip)
 
 ** **我将SpriteSheetClip与普通影片剪辑以及CopyPixel方案做了对比测试。测试结果令人影响深刻，SpriteSheetClip运行的动画超过了普通影片剪辑40倍，并且超过CopyPixels方案接近10倍。这比之前的所谓的Flash中“最快的”渲染方案还高出数量级的倍数。测试结果如下表：
 
-[![](http://blog.domlib.com/wp-content/uploads/2012/08/benchmarks1.jpg)](http://blog.domlib.com/wp-content/uploads/2012/08/benchmarks1.jpg)
+[![](/uploads/2012/08/benchmarks1.jpg)](/uploads/2012/08/benchmarks1.jpg)
 
 ** **在这里你可以看到，即使更古老的Android设备比如Nexus One，都能获取非常不错的测试结果。在30fps的帧率下同时播放150动画的性能足够制作几乎所有的2D游戏。而对于较新的一些设备，测试结果变得令人印象非常深刻，在保持30fpsd的帧率下iPad 2跑满了735个动画？！
 

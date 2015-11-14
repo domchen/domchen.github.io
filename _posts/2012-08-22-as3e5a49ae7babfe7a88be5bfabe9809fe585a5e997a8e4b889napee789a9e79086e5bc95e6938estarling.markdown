@@ -23,7 +23,7 @@ tags:
 在系列教程的[第二部分](http://esdot.ca/site/2012/intro-to-as3-workers-part-2-image-processing)中，我们研究了在一个在独立线程里执行图像处理的例子。
 
 在这教程的最后一部分里，我将介绍如何在一个单独的线程运行你的物理引擎，然后我们再混合一点Starling作为锦上添花的东西。
-首先，让我看看我们将要做的东西是什么：<!-- more -->
+首先，让我看看我们将要做的东西是什么：
 
 多线程版本演示地址:[http://esdot.ca/examples/NapeWorkerExample.html](http://esdot.ca/examples/NapeWorkerExample.html)
 

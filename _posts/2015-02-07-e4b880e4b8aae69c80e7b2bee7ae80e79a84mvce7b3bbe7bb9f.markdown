@@ -13,8 +13,8 @@ tags:
 
 我所理解的MVC系统，主要是为了解决多人项目协作用的。如何让多人协作开发互不影响呢？那自然是要按功能分模块。具体要实现的目标是：关闭了其中几个非必需模块，其他模块也能正常运行，彼此之间没有直接的依赖和引用关系。从而让多个程序员能达到互不干扰地独立开发。一旦把模块解耦开，那就必须再提供一个模块间的通讯机制。要有一个Context作为总线，所有模块都持有它，并通过它来发送监听各种命令。这件事做到这里就完成了，不需要更多功能。下面分享一下我们项目中使用过的最精简的MVC系统，上截图：
 
-[![MVC2](http://blog.domlib.com/wp-content/uploads/2015/02/MVC2.png)](http://blog.domlib.com/wp-content/uploads/2015/02/MVC2.png)
-<!-- more -->
+[![MVC2](/uploads/2015/02/MVC2.png)](/uploads/2015/02/MVC2.png)
+
 
 
 简单介绍一下包结构，code包下有三个包，分别是app，common，和module。
@@ -122,4 +122,4 @@ ControllerList:控制器列表。所有功能模块的控制器都在这里实�
 
 这里还需要说明一下，这只是个参考，并不用按照条条框框一层不变地去使用。可以根据实际项目的特点进行简单调整。例如在开发应用软件项目情况下，module下按功能模块分包的结构就不合理了。游戏里的功能模块可以分的比较清楚，每个模块都会有自己的数据模型，视图和控制器。而应用软件里大多数是全局互相作用的，一个功能可能只有控制器或只有数据模型。所以更合适的结构是module下直接创建四个目录：command，controller，model，view。对号入座即可。
 
-最后，附上完整例子：[MVC参考实现](http://blog.domlib.com/wp-content/uploads/2015/02/MVC参考实现.zip) 使用说明：这并不是一个库，因为每个类你都可能直接修改它，直接把模板拷贝到项目里用即可。正式使用时可以删掉module下的sample目录，并对应删除app包下ControllerList里的sampleController定义。
+最后，附上完整例子：[MVC参考实现](/uploads/2015/02/MVC参考实现.zip) 使用说明：这并不是一个库，因为每个类你都可能直接修改它，直接把模板拷贝到项目里用即可。正式使用时可以删掉module下的sample目录，并对应删除app包下ControllerList里的sampleController定义。

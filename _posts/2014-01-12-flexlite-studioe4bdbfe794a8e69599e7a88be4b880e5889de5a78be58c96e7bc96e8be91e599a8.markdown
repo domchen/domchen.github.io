@@ -16,7 +16,7 @@ tags:
 
 **一.FS如何跟纯AS项目协作**
 
-实际上，AS项目完全不关心是否有FS的存在。FlexLite框架引入的皮肤分离机制（参考[FlexLite框架解读(一)](http://blog.domlib.com/articles/407.html)），就是起到皮肤与逻辑彻底解耦的作用。皮肤也是一个AS类。至于这个皮肤类是你手写的，还是自动生成的，AS项目是不关心的，你只需要在逻辑类上引用这个皮肤类即可。所以，你还是按照你熟悉的方式开发AS项目，只是现在皮肤的AS文件改成由FS帮你生成了。<!-- more -->
+实际上，AS项目完全不关心是否有FS的存在。FlexLite框架引入的皮肤分离机制（参考[FlexLite框架解读(一)](http://blog.domlib.com/articles/407.html)），就是起到皮肤与逻辑彻底解耦的作用。皮肤也是一个AS类。至于这个皮肤类是你手写的，还是自动生成的，AS项目是不关心的，你只需要在逻辑类上引用这个皮肤类即可。所以，你还是按照你熟悉的方式开发AS项目，只是现在皮肤的AS文件改成由FS帮你生成了。
 
 这里说下与Flex的可视化有区别的地方，在Flex里，是允许MXML内嵌入AS代码混合编辑的。这样看起来很方便，其实自相矛盾了，因为它跟皮肤分离机制完全背离了。它现在既是逻辑组件又是皮肤，跟原先的开发方式毫无区别，皮肤分离的优点全不在，那何必引入一个新的工作流？所以，FS只干一件事：编辑并生成皮肤的AS文件。而逻辑代码一定是在纯AS项目中写的。
 
@@ -24,7 +24,7 @@ tags:
 
 这里我们以FlexLiteTest工程为例（[检出地址](http://wiki.flexlite.org/index.php?doc-view-61)），首次启动FS时，“配置项目属性”窗口将会自动弹出，你也可以通过点击菜单栏“文件”->“项目属性”来打开它：
 
-[![配置项目属性](http://blog.domlib.com/wp-content/uploads/2014/01/FS_project.png)](http://blog.domlib.com/wp-content/uploads/2014/01/FS_project.png)
+[![配置项目属性](/uploads/2014/01/FS_project.png)](/uploads/2014/01/FS_project.png)
 
 
 
@@ -48,7 +48,7 @@ tags:
 
 在配置完上面的窗口后，FS就初始化完毕，可以开始编辑皮肤了。在这之前，先让我们来看下FS在目标AS工程里都做了什么修改。还是以FlexLiteTest为例，配置完成后，FS在FlexLiteTest目录下创建了两个文件夹：dxml和project。
 
-[![FS_folder](http://blog.domlib.com/wp-content/uploads/2014/01/FS_folder.jpg)](http://blog.domlib.com/wp-content/uploads/2014/01/FS_folder.jpg)
+[![FS_folder](/uploads/2014/01/FS_folder.jpg)](/uploads/2014/01/FS_folder.jpg)
 
 
 

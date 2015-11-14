@@ -15,14 +15,14 @@ tags:
 
 
 
-[![lark](http://blog.domlib.com/wp-content/uploads/2015/07/lark.png)](http://blog.domlib.com/wp-content/uploads/2015/07/lark.png)
+[![lark](/uploads/2015/07/lark.png)](/uploads/2015/07/lark.png)
 
 Lark的产品页：[http://www.egret.com/products-lark](http://www.egret.com/products-lark)
 Github开源地址：[https://github.com/egret-labs/Lark](https://github.com/egret-labs/Lark)
 
 Lark 是一款基于 HTML5 技术构建跨平台移动 Web 应用，微站和富媒体广告营销的交互应用框架。Lark和Egret同属白鹭时代旗下的两款开源产品，今后会并行发展：Egret主要面向游戏行业，而Lark主要面向应用开发行业。并行发展能够让两个产品更加专注在细分领域，根据特定开发需求实现针对性优化。目前Lark只发布了框架源码部分，第一个版本重在提供一个精简高效的渲染核心，除了专门为应用开发精简或优化的部分，其他大部分API跟Egret都比较类似。但随着后续版本迭代，各种工具集和扩展库逐步丰富起来，两个产品的差距也会越来越大。这系列文章主要面向已经熟悉Egret的开发者，重点在于解读Lark相对Egret所引入的新特性，让部分开发者能快速上手Lark。更加详细的教程文档，也会在最近几周内陆续开放出来。可以关注此页面：[https://github.com/egret-labs/Lark/tree/master/docs](https://github.com/egret-labs/Lark/tree/master/docs) 。
 
-<!-- more -->
+
 
 这系列文章将会从开发者角度，将值得关注的重点功能特性逐一解读。这系列文章预计会有三篇，前两篇主要讲解Lark核心库内容，第三篇讲解全新的GUI库(Swan)。前两篇所涉及的核心库大部分改动都是围绕着这个主题：提升性能，精简包体，拥抱Web标准。Lark核心库去除掉了大量的中间层封装代码，直接暴露Web已有的API结构。这样能在有效提升性能的情况下，同时降低最终包体大小，目前Lark的核心库大小仅有68k（未GZIP压缩）。大部分重构的新特性，也更加偏向前端JS通用开发方式。
 
@@ -98,7 +98,7 @@ Lark 是一款基于 HTML5 技术构建跨平台移动 Web 应用，微站和富
 
 Lark里不再额外封装一层JS加载机制，而是直接使用前端JS开发非常熟悉且通用的初始化方式，类似JQuery直接在HTML页面里嵌入<script></script>标签，即可完成对lark.js类库的引用。用此方法同样也可以嵌入第三方库的JS文件，不再需要写任何额外的配置文件。另外，完成应用初始化也只需一个div标签即可，不再需要复杂的JS代码定制。所有的初始化属性都可以直接在div标签上声明。如下图：
 
-[![Lark_DIV](http://blog.domlib.com/wp-content/uploads/2015/07/Lark_DIV.png)](http://blog.domlib.com/wp-content/uploads/2015/07/Lark_DIV.png)
+[![Lark_DIV](/uploads/2015/07/Lark_DIV.png)](/uploads/2015/07/Lark_DIV.png)
 
 只需将DIV的class属性声明为约定的"lark-player"即可，在网页加载完成后，Lark会获取网页中所有class值为"lark-player"的div标签，为其实例化一个对应的Stage并启动入口程序。具体每个参数的含义，可以参考在线的[Lark核心库开发指南](https://github.com/egret-labs/Lark/blob/master/docs/core/README.md)，这里不在赘述。改成直接用div标签初始化之后，即使没有Lark开发经验，任何前端开发者都能根据简洁的XML语法正确配置程序，也让美术人员更加容易定制HTML页面样式。如文章开头所说，Lark允许多个应用共存，也就是开发者可以定义这样多个div标签，只要让data-entry-class入口类都不相同即可。
 

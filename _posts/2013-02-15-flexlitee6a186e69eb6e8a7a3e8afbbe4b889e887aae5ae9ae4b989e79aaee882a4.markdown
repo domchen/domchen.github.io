@@ -14,7 +14,7 @@ tags:
 
 关于皮肤分离，上次UIPanelSkin.as的例子,已经说的很清楚了，这里再总结一下：就是把之前耦合的一个组件拆成两个，一个逻辑组件，一个皮肤对象。逻辑组件只关心交互逻辑，所有布局和样式相关的属性都在皮肤对象里设置。组件里可能还含有子项组件。子项都在皮肤对象里实例化，然后和逻辑组件通过声明同名变量的方式，运行时把子项引用赋值给逻辑组件。最后在运行时，逻辑组件把皮肤对象作为自己的唯一子项添加到自身，从而把皮肤显示出来。逻辑组件像操纵木偶一样，通过同名变量操纵皮肤对象里的子项。对以上描述还不清楚的，或者不明白这么做的好处的，请自行阅读[第一篇文章](http://blog.domlib.com/articles/407.html)，重复的地方这里就不再赘述了。
 
-要自定义皮肤，其实是有个捷径的。框架里的每个组件都有默认皮肤，全在org.flexlite.domUI.skins.vector包下。只要照着写或者拷贝出来修改即可。这里我们先来看看如何给组件指定皮肤。<!-- more -->
+要自定义皮肤，其实是有个捷径的。框架里的每个组件都有默认皮肤，全在org.flexlite.domUI.skins.vector包下。只要照着写或者拷贝出来修改即可。这里我们先来看看如何给组件指定皮肤。
 
     
     
@@ -55,7 +55,7 @@ tags:
 
 只要给组件的skinName指定一个皮肤类即可。是不是很简单？运行结果如下：
 
-[![TitleWindowTest](http://blog.domlib.com/wp-content/uploads/2013/02/TitleWindow.jpg)](http://blog.domlib.com/wp-content/uploads/2013/02/TitleWindow.jpg)
+[![TitleWindowTest](/uploads/2013/02/TitleWindow.jpg)](/uploads/2013/02/TitleWindow.jpg)
 
 
 

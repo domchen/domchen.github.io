@@ -14,11 +14,11 @@ tags:
 
 (1)通常层级管理都是采用多个子容器的方式来实现。如下图，SystemManager是根容器，然后分别添加四个Group作为子容器。根据不同的用途向各个子容器添加对象，即可实现分层管理。
 
-[![SystemManager](http://blog.domlib.com/wp-content/uploads/2013/08/SystemManager.jpg)](http://blog.domlib.com/wp-content/uploads/2013/08/SystemManager.jpg)
+[![SystemManager](/uploads/2013/08/SystemManager.jpg)](/uploads/2013/08/SystemManager.jpg)
 
 
 
-但是这么做有个问题，SystemManager仍然可以继续添加子项。而且后添加的子项，一定会在所有的层级之上！这样就留出了破坏框架内部层级管理的漏洞。因此我们需要一个更好的方案，从代码上杜绝这种情况，<!-- more -->而不是靠人为约定（因为人为约定通常都不靠谱）。在SystemManager里采用的是虚拟的子容器SystemContainer作为层级管理。SystemContainer本身并不是容器，它只是记录了SystemManager的两个层级索引值。有任何添加或移除子项的行为发生时，这两个索引值都会动态更新。当往SystemContainer里添加子项时，它会把子项添加到SystemManager中，并确保子项添加到记录的那两个索引值之间的层级。
+但是这么做有个问题，SystemManager仍然可以继续添加子项。而且后添加的子项，一定会在所有的层级之上！这样就留出了破坏框架内部层级管理的漏洞。因此我们需要一个更好的方案，从代码上杜绝这种情况，而不是靠人为约定（因为人为约定通常都不靠谱）。在SystemManager里采用的是虚拟的子容器SystemContainer作为层级管理。SystemContainer本身并不是容器，它只是记录了SystemManager的两个层级索引值。有任何添加或移除子项的行为发生时，这两个索引值都会动态更新。当往SystemContainer里添加子项时，它会把子项添加到SystemManager中，并确保子项添加到记录的那两个索引值之间的层级。
 
 简单说就是我们在SystemManager的子项列表里插上了两个分层的标签，每次通过SystemContainer添加的子项，都插入到这两个标签之间。SystemManager里共插入了四个标签，从上自下每两个标签确定一个SystemContainer，分别是cursorContainer鼠标样式层，toolTipContainer工具提示层，popUpContainer弹出框层，最下面的标签到索引0的位置，就是SystemManager.addElement()等自身方法操作的区间。你可以通过SystemManager.popUpContainer.addElement()添加一个子项试试，然后用SystemManager.addElementAt()添加一个新的子项，无论索引指定为多少，新的子项都在之前通过popUpContainer添加的层级之下。对外使用上跟使用了多个子容器的方式没有区别。区别是你通过SystemManager的任何方法添加子项都不可能会盖住弹出框或工具提示了。
 

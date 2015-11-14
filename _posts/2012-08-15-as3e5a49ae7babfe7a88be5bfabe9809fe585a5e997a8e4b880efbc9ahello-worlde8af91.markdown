@@ -19,7 +19,7 @@ tags:
 在本文中，我将全部过一遍Workers这个API的各个组成部分。然后我们再看一个简单的小程序：HelloWorker。
 
 如果你想要跟着做，你可以先下载下面的Flash Builder项目文件：
-[FlashBuilder项目文件<!-- more -->](http://blog.domlib.com/wp-content/uploads/2012/08/HelloWorldWorker.zip)
+[FlashBuilder项目文件](/uploads/2012/08/HelloWorldWorker.zip)
 
 如果你只是想看看代码而已，废话就不多说了，下载这个看看：[HellWorldWorker.as](http://esdot.ca/examples/HelloWorldWorker.as)
 
@@ -137,7 +137,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
     
     做了以上步骤，你现在应该能看到各种Worker相关的API比如Worker，WorkerDomain,MessageChannel等等了。如果你在以步骤作中遇到困难，请参考<a href="http://www.gotoandlearn.com/play.php?id=162" target="_blank">Lee Brimelow的视频教程 </a>，最开始的几分钟有介绍这个。
     
-    你也可以直接下载<a href="http://blog.domlib.com/wp-content/uploads/2012/08/HelloWorldWorker.zip" target="_blank">我Flash Builder项目</a>的一个副本，应该能运行起来。
+    你也可以直接下载<a href="/uploads/2012/08/HelloWorldWorker.zip" target="_blank">我Flash Builder项目</a>的一个副本，应该能运行起来。
     
     <strong>第一步：文档类</strong>
     

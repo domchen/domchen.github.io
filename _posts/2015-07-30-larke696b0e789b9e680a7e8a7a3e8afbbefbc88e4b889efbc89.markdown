@@ -29,7 +29,7 @@ tags:
 
 新版本的GUI库在提高新手易用性上做了大刀阔斧的重构，以上痛点在Lark GUI中也都得到了彻底解决，在以下的新特性解读中，将会逐一覆盖到。
 
-<!-- more -->
+
 
 
 ## 组件立即返回宽高
@@ -103,7 +103,7 @@ tags:
 
 
 
-[![EXML](http://blog.domlib.com/wp-content/uploads/2015/07/EXML.png)](http://blog.domlib.com/wp-content/uploads/2015/07/EXML.png)
+[![EXML](/uploads/2015/07/EXML.png)](/uploads/2015/07/EXML.png)
 
 
 
@@ -153,7 +153,7 @@ XML的文件结构描述显示列表有着天然的优势。在之前的GUI库�
 
 
 
-[![Class](http://blog.domlib.com/wp-content/uploads/2015/07/Class.png)](http://blog.domlib.com/wp-content/uploads/2015/07/Class.png)
+[![Class](/uploads/2015/07/Class.png)](/uploads/2015/07/Class.png)
 
 
 

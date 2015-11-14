@@ -11,8 +11,8 @@ tags:
 
 剧透一下：经过我们软件工具团队的努力，Egret Wing应该会提早跟大家见面。第一个公开测试版预计会在两月后发布。在发布之前,为了让大家少走弯路，我感觉很有必要说明一件事：千万千万别直接从编辑器开始学Egret GUI。
 
-[![Splash](http://blog.domlib.com/wp-content/uploads/2014/07/Splash.png)](http://blog.domlib.com/wp-content/uploads/2014/07/Splash.png)
-<!-- more -->
+[![Splash](/uploads/2014/07/Splash.png)](/uploads/2014/07/Splash.png)
+
 先说一下Egret GUI的来历。这要先说FlexLite这个开源框架。详细信息可以参考这里：FlexLite游戏UI解决方案 简单说：FlexLite是基于Flex4 Spark架构用纯AS3重写的。以10%的代码量，为游戏专门精简优化了一个版本。剔除了所有冗余的功能，和损耗性能的部分，并保留了最能提高开发效率的自动布局和皮肤分离机制。而Egret GUI是在FlexLite的基础上，针对H5游戏做的进一步精简优化。
 
 以下是针对Egret GUI框架原理讲解的三篇教程：

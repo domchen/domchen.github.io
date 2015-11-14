@@ -27,10 +27,10 @@ tags:
 Adobe是交互设计出身的公司，对于UI框架的设计有着得天独厚的优势。凡是用过Flex开发些工具的程序员，应该没有不感叹它的开发效率之高的吧？Flex本身有非常多的优秀设计理念值得借鉴：延迟渲染，组合式的组件结构，依赖注入的设计和失效验证等等。抛开内部设计不谈，其中最能让我们在UI开发中直接获益的，当属自动布局和皮肤分离机制。
 ****
 相信用过Flex自动布局的人，应该都会对手写xy的方式深恶痛绝。自动布局极大降低了我们布局定位的难度，在掌握基本规则后，能够适应任何的布局情况。而最大的好处在于，我们能够用自动布局搭建「流式界面」，等到要修改舞台分辨率或者面板尺寸可变的时候，你就会庆幸一开始用了自动布局。因为你几乎不用做任何的工作，界面已经是自动适应了新的尺寸。
-****<!-- more -->
+****
 皮肤分离机制则是Flex3到Flex4的最大改进!为此Adobe不惜重写了一套平行的Spark组件包来替换Flex3的MX组件。这套机制真正意义上做到了外观和逻辑的完全解耦。原理简单说就是将原本一个组件，拆成包含关系的两个，外层只写逻辑，内层只负责外观和布局，他们之间通过声明公共同名变量来持有子项的引用，然后逻辑类像操作牵线木偶一般操作皮肤内的子项。如下图所示：（具体细节可以阅读[FlexLite框架解读(一):皮肤分离机制](http://blog.domlib.com/articles/407.html)）
 ****
-[![Skin.png](http://blog.domlib.com/wp-content/uploads/2012/01/Skin.png)](http://blog.domlib.com/wp-content/uploads/2012/01/Skin.png)
+[![Skin.png](/uploads/2012/01/Skin.png)](/uploads/2012/01/Skin.png)
 ****
 分离后的好处：
 
@@ -69,7 +69,7 @@ Adobe是交互设计出身的公司，对于UI框架的设计有着得天独厚�
 
 **四． FlexLite框架优势要点总结**
 ****
-[![FlexLite组件结构图](http://blog.domlib.com/wp-content/uploads/2013/11/FlexLite组件结构图-300x230.png)](http://blog.domlib.com/wp-content/uploads/2013/11/FlexLite组件结构图.png)
+[![FlexLite组件结构图](/uploads/2013/11/FlexLite组件结构图-300x230.png)](/uploads/2013/11/FlexLite组件结构图.png)
 ****
 (1)以松散耦合的方式实现游戏需要的40多个UI组件，发行版编译体积增量仅有25K~106K。(具体细节请参考[编译大小](http://wiki.flexlite.org/index.php?doc-view-67))
 
@@ -133,7 +133,7 @@ Adobe是交互设计出身的公司，对于UI框架的设计有着得天独厚�
 
 
 
-[![FlexLiteStudio](http://blog.domlib.com/wp-content/uploads/2013/11/FlexLiteStudio-300x174.png)](http://blog.domlib.com/wp-content/uploads/2013/11/FlexLiteStudio.png)
+[![FlexLiteStudio](/uploads/2013/11/FlexLiteStudio-300x174.png)](/uploads/2013/11/FlexLiteStudio.png)
 
 
 

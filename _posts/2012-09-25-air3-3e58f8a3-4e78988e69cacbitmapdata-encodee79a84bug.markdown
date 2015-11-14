@@ -13,7 +13,7 @@ tags:
 
 最近做位图转换的时候，发现一个矢量素材的绘制结果总是出现色差。如下图。
 
-[![AIR位图编码BUG](http://blog.domlib.com/wp-content/uploads/2012/09/air_bug.jpg)](http://blog.domlib.com/wp-content/uploads/2012/09/air_bug.jpg)
+[![AIR位图编码BUG](/uploads/2012/09/air_bug.jpg)](/uploads/2012/09/air_bug.jpg)
 
 
 
@@ -27,6 +27,6 @@ AIR3.4版本：使用BitmapData.encode()编码只有JEPG会出现色差。<del>P
 
 希望以上可以给遇到同样问题的同学一个参考。:)
 
-ps:[测试fla源文件下载](http://blog.domlib.com/wp-content/uploads/2012/09/Air_bug_fla.rar)
+ps:[测试fla源文件下载](/uploads/2012/09/Air_bug_fla.rar)
 
 **[更新]后来在AIR3.4下测试另一个图像的PNG编码也出了问题，透明通道完全丢失。说明AIR3.4的Png编码还是有问题的。跟JPEG一样，都是碰到特殊的图像时才会体现出来。建议不要使用AIR里的PNG和Jpeg编码接口了。用mx.graphics.codec.PNGEncoder和mx.graphics.codec.JPEGEncoder替换吧。虽然慢点，起码编码结果是正确的。**

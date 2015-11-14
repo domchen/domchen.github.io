@@ -14,7 +14,7 @@ tags:
 
 废话不多说，先上代码：
 
-[Recycler.as](http://blog.domlib.com/wp-content/uploads/2012/11/Recycler.as)<!-- more -->
+[Recycler.as](/uploads/2012/11/Recycler.as)
 
     
     
@@ -74,7 +74,7 @@ tags:
 
 下面这个类就稍微有一点点复杂了，其实也很简单：
 
-[SharedMap.as](http://blog.domlib.com/wp-content/uploads/2012/11/SharedMap.as)
+[SharedMap.as](/uploads/2012/11/SharedMap.as)
 
     
     

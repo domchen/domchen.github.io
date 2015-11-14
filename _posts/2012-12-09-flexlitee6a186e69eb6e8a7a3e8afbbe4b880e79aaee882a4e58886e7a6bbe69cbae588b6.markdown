@@ -18,7 +18,7 @@ tags:
 
 **皮肤分离机制**
 
-这个东西是Flex4才开始有的，说到Flex4，还有人说MX组件不是也可以直接设置样式吗？Spark组件包才是真正的Flex4，MX是对Flex3的兼容组件包。运行原理是完全不一样的。FlexLite是完全基于Spark的原理重写的。包括一些Spark还没实现的组件。比如TabNavigator，还有Tree(还没完成，但是会有的)。所以要看皮肤分离就不要再找错对象了：只看Spark组件。<!-- more -->
+这个东西是Flex4才开始有的，说到Flex4，还有人说MX组件不是也可以直接设置样式吗？Spark组件包才是真正的Flex4，MX是对Flex3的兼容组件包。运行原理是完全不一样的。FlexLite是完全基于Spark的原理重写的。包括一些Spark还没实现的组件。比如TabNavigator，还有Tree(还没完成，但是会有的)。所以要看皮肤分离就不要再找错对象了：只看Spark组件。
 
 要说皮肤分离，我们先来看看原先的UI面板是怎么写的，一个灰常简单的例子有助于理解：
 UIPanel.as

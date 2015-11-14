@@ -18,17 +18,17 @@ tags:
 
 Lark里精简了初始化过程，设置屏幕适配模式，不再需要去修改加载器代码，只需在Lark Div节点上直接设置data-scale-mode属性即可，如下图：
 
-[![ScaleMode2](http://blog.domlib.com/wp-content/uploads/2015/07/ScaleMode2.png)](http://blog.domlib.com/wp-content/uploads/2015/07/ScaleMode2.png)
+[![ScaleMode2](/uploads/2015/07/ScaleMode2.png)](/uploads/2015/07/ScaleMode2.png)
 
 若需要运行时动态修改屏幕适配模式，开发者仍然可以通过修改Stage.scaleMode属性来实现。data-scale-mode属性相当于设置Stage.scaleMode初始值的一个简便方法。
 
 Lark一共提供了6种屏幕适配模式，在讲解各种适配模式前，我们首先必须明确一点，屏幕适配模式解决且仅解决一个问题：舞台尺寸(stageWidth,stageHeight)与设备屏幕尺寸的对应关系。也就是修改屏幕适配模式，只会改变最外层的舞台尺寸。但这仅仅只是第一步，若要实现内容的完美适配，还需要在舞台尺寸发生改变时，自行调整内部UI界面的布局。当然，开发者可以借助Swan扩展库的自适应流式布局轻松实现内容的适配。
 
-<!-- more -->
+
 
 另外需要关注一下其它两个属性：data-content-width和data-content-height，它们表示应用程序期望的初始内容尺寸。屏幕适配就是根据设备屏幕尺寸与初始内容尺寸，以及指定的适配规则计算出此时的舞台尺寸的过程。下图演示了六种适配模式的效果图：
 
-[![ScaleMode3](http://blog.domlib.com/wp-content/uploads/2015/07/ScaleMode3.png)](http://blog.domlib.com/wp-content/uploads/2015/07/ScaleMode3.png)
+[![ScaleMode3](/uploads/2015/07/ScaleMode3.png)](/uploads/2015/07/ScaleMode3.png)
 
 具体每种适配模式的详细定义，可以参考Lark的在线API文档，这里不再赘述。这里可以看到，Lark里除了支持Flash里标准的四种适配模式外，还增加了对fixedHeight，fixedWidth这两种移动设备上比较常用的适配模式的支持。
 
@@ -38,7 +38,7 @@ Lark一共提供了6种屏幕适配模式，在讲解各种适配模式前，我
 
 与屏幕适配相关的，开发者还有一个比较强烈的需求，就是锁定屏幕方向。之前在遇到这块需求时，开发者通常都是采用一个变通的方式：自行旋转舞台90°，然后在编程的时候，将x和y坐标调转过来写。虽然可以实现，但是方式较为繁琐，并且容易出现各种兼容问题。 现在Lark里已经对此功能原生提供了支持，可以轻松实现锁定屏幕为横屏或竖屏模式。Lark在底层旋转了画布，编程上直接当成锁定后的舞台尺寸即可，无需任何特殊处理。配置方式与屏幕适配模式也类似，只需简单地在Lark Div上设置data-orientation即可。一共有四个有效值：自动，锁定竖屏，以及正负90°的两种锁定横屏方式，效果如下图：
 
-[![orientation](http://blog.domlib.com/wp-content/uploads/2015/07/orientation.png)](http://blog.domlib.com/wp-content/uploads/2015/07/orientation.png)
+[![orientation](/uploads/2015/07/orientation.png)](/uploads/2015/07/orientation.png)
 
 
 ## **Event对象池**
@@ -46,7 +46,7 @@ Lark一共提供了6种屏幕适配模式，在讲解各种适配模式前，我
 
 JS里创建对象的瞬间开销相对于其他强类型语言来说比较大，因此对象池作为一种减少对象创建次数的优化方式，在JS开发里被广泛使用。Lark的事件机制内置了Event的标准对象池操作方法，来避免不必要的重复创建新对象。之前在Egret里同样对事件机制做过了对象池优化，现在Lark里跟进一步，将事件对象池的方法重构为更加简洁的标准API，Event类上一共提供了三个方法：create()和release()两个静态方法，分别负责创建和销毁事件对象，另外一个实例方法clean()，事件子类覆盖clean()方法能够在回收时自动清理外部引用。具体调用方法如下图：
 
-[![EventPool](http://blog.domlib.com/wp-content/uploads/2015/07/EventPool.png)](http://blog.domlib.com/wp-content/uploads/2015/07/EventPool.png)
+[![EventPool](/uploads/2015/07/EventPool.png)](/uploads/2015/07/EventPool.png)
 
 
 
@@ -60,7 +60,7 @@ JS里创建对象的瞬间开销相对于其他强类型语言来说比较大，
 
 TypeScript中提供了接口(interface)的定义功能，能够很大程度上方便面向对象的编程开发。但是由于TS最终是要编译为JS运行的，而JS中并没有接口的概念，因此TS的接口仅在编译阶段提供类型检查，无法在运行时判断一个实例是否实现了某个接口。为了解决这个问题，之前变通的方案是：通过in关键字来检查一个实例是否含有目标接口定义的属性名，从而判断该实例是否实现了某个接口，大部分情况下都是能够适用的，但是遇到正好含有同名属性，却未实现目标接口时，就无效了。因此这是个并不安全且可靠的方案。现在，Lark里提供了lark.is()的全局函数，能够在运行时准确判断一个实例是否实现了某个接口，或者是否为一个类或它的子类的实例。调用方式也非常简单：
 
-[![larkis](http://blog.domlib.com/wp-content/uploads/2015/07/larkis.png)](http://blog.domlib.com/wp-content/uploads/2015/07/larkis.png)
+[![larkis](/uploads/2015/07/larkis.png)](/uploads/2015/07/larkis.png)
 
 
 
@@ -84,7 +84,7 @@ Lark里新增了另一个呼声很高的API，原生的像素级精确碰撞。�
 
 Lark里提供了统一的日志输出方法lark.log()，推荐用它全面替代console.log()。因为console.log()理论上是浏览器提供的API，原生打包方案里不一定会有。lark.log()除了能向浏览器的控制台标准输出外，还能够将日志直接输出到屏幕上的FPS区域，效果如下图：
 
-[![LOG](http://blog.domlib.com/wp-content/uploads/2015/07/LOG.png)](http://blog.domlib.com/wp-content/uploads/2015/07/LOG.png)
+[![LOG](/uploads/2015/07/LOG.png)](/uploads/2015/07/LOG.png)
 
 这个功能在移动端调试时非常有用，因为移动端目前还比较缺乏通用的真机调试方案，也无法方便地直接获取手机上浏览器的控制台输出。此时就可以通过FPS面板直接看到的日志信息，来实现快速的调试。开启此功能只需在Lark Div节点设置data-show-log属性为true即可，反之设置为false将不再显示日志信息。另外还可以通过设置data-log-filter属性来附加一个正则表达式，用于过滤大量的日志信息，只显示指定的部分。
 
