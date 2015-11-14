@@ -11,7 +11,7 @@ tags:
 - 多线程
 ---
 
-<blockquote>原文链接：[http://esdot.ca/site/2012/intro-to-as3-workers-part-3-nape-physics-starling](http://esdot.ca/site/2012/intro-to-as3-workers-part-3-nape-physics-starling)</blockquote>
+<blockquote><p>原文链接：<a href="http://esdot.ca/site/2012/intro-to-as3-workers-part-3-nape-physics-starling" target="_blank">http://esdot.ca/site/2012/intro-to-as3-workers-part-3-nape-physics-starling</a></p></blockquote>
 
 
 

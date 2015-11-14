@@ -9,7 +9,7 @@ tags:
 - 多线程
 ---
 
-<blockquote>原文链接：[http://esdot.ca/site/2012/intro-to-as3-workers-hello-world](http://esdot.ca/site/2012/intro-to-as3-workers-hello-world)</blockquote>
+<blockquote><p>原文链接：<a href="http://esdot.ca/site/2012/intro-to-as3-workers-hello-world">http://esdot.ca/site/2012/intro-to-as3-workers-hello-world</a></p></blockquote>
 
 
 随着AIR3.4和Flash Player11.4的测试版发布，Adobe终于推出了多年来被要求最多的API：多线程！
