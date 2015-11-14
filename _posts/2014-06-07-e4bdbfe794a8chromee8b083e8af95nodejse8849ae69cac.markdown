@@ -1,13 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2014-06-07 15:37:19+00:00
 layout: post
-slug: '%e4%bd%bf%e7%94%a8chrome%e8%b0%83%e8%af%95nodejs%e8%84%9a%e6%9c%ac'
 title: 使用Chrome调试NodeJS脚本
-wordpress_id: 686
-categories:
-- NodeJS
+id: 686
 tags:
 - NodeJS
 - 调试

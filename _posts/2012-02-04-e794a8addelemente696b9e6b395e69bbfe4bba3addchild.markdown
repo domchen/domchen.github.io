@@ -1,13 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-02-04 20:43:58+00:00
 layout: post
-slug: '%e7%94%a8addelement%e6%96%b9%e6%b3%95%e6%9b%bf%e4%bb%a3addchild'
 title: 用addElement()方法替代addChild()?
-wordpress_id: 153
-categories:
-- UI框架
+id: 153
 tags:
 - Flex
 - UI

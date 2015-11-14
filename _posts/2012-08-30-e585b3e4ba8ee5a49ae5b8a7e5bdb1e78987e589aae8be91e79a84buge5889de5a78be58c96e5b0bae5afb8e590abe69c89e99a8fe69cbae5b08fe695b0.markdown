@@ -1,15 +1,15 @@
 ---
 author: dom
-comments: true
 date: 2012-08-30 14:44:34+00:00
 layout: post
-slug: '%e5%85%b3%e4%ba%8e%e5%a4%9a%e5%b8%a7%e5%bd%b1%e7%89%87%e5%89%aa%e8%be%91%e7%9a%84bug%e5%88%9d%e5%a7%8b%e5%8c%96%e5%b0%ba%e5%af%b8%e5%90%ab%e6%9c%89%e9%9a%8f%e6%9c%ba%e5%b0%8f%e6%95%b0'
 title: 关于多帧影片剪辑的bug,初始化尺寸含有随机小数
-wordpress_id: 353
-categories:
-- ActionScript
-- Flash
-- 游戏开发
+id: 353
+tags:
+- Flash player
+- Sound
+- SoundChanel
+- 耳机
+- 音频设备
 ---
 
 最近项目开发过程中，又遇到了一个极其棘手的bug。调试了一天，最后发现是影片剪辑的bug。

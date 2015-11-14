@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-09-25 03:45:44+00:00
 layout: post
-slug: air3-3%e5%8f%8a3-4%e7%89%88%e6%9c%acbitmapdata-encode%e7%9a%84bug
 title: AIR3.3及3.4版本BitmapData.encode()的Bug
-wordpress_id: 365
-categories:
-- ActionScript
-- AIR
-- Flash
-- FLEX
+id: 365
 tags:
 - AIR3.3
 - AIR3.4

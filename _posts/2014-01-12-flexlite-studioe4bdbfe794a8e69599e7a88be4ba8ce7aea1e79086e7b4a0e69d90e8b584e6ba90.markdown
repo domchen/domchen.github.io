@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2014-01-12 15:01:42+00:00
 layout: post
-slug: flexlite-studio%e4%bd%bf%e7%94%a8%e6%95%99%e7%a8%8b%e4%ba%8c%e7%ae%a1%e7%90%86%e7%b4%a0%e6%9d%90%e8%b5%84%e6%ba%90
 title: FlexLite Studio使用教程(二):素材资源管理
-wordpress_id: 650
-categories:
-- ActionScript
-- Flash
-- FlexLite
-- UI框架
+id: 650
 tags:
 - DXR
 - FlexLite

@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2015-07-30 15:49:22+00:00
 layout: post
-slug: lark%e6%96%b0%e7%89%b9%e6%80%a7%e8%a7%a3%e8%af%bb%ef%bc%88%e4%b8%89%ef%bc%89
 title: Lark新特性解读（三）
-wordpress_id: 811
-categories:
-- Lark
-- UI框架
-- 编程理论
+id: 811
 tags:
 - GUI
 - Lark

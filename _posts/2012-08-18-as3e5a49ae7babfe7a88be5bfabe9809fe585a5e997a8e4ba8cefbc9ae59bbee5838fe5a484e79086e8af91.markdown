@@ -1,14 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-08-18 07:17:17+00:00
 layout: post
-slug: as3%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8%e4%ba%8c%ef%bc%9a%e5%9b%be%e5%83%8f%e5%a4%84%e7%90%86%e8%af%91
 title: AS3多线程快速入门(二):图像处理[译]
-wordpress_id: 326
-categories:
-- ActionScript
-- Flash
+id: 326
 tags:
 - Flash Player11.4
 - 多线程
@@ -55,7 +50,7 @@ tags:
 首先是类结构，这里我们将使用和上一个教程里一样方式：用loaderInof.bytes。这个构造函数会被运行两次，第二次运行的是worker，它会创建一个SharpenWorker类的实例，这个实例将负责处理所有与主线程的通信。
 
     
-    [as3]
+    
     public class ImageWorkerExample extends Sprite
     {
     public function ImageWorkerExample(){
@@ -69,7 +64,7 @@ tags:
     		sharpenWorker = new SharpenWorker();
     	}
     }
-    [/as3]
+    
 
 
 在看SharpenWorker类之前，我们先继续读主类。
@@ -79,7 +74,7 @@ initUi()方法只是简单地创建了一个slider，一个image，并且添加�
 下一个方法是initWorker(),可以看看代码内的注释。
 
     
-    [as3]
+    
     protected function initWorker():void {
     	//从主swf里创建worker 
     	worker = WorkerDomain.current.createWorker(loaderInfo.bytes);
@@ -109,7 +104,7 @@ initUi()方法只是简单地创建了一个slider，一个image，并且添加�
     	//最后，启动worker线程.
     	worker.start();
     }
-    [/as3]
+    
 
 
 在以上代码中，我们做了这些事：
@@ -125,19 +120,19 @@ initUi()方法只是简单地创建了一个slider，一个image，并且添加�
 首先，我们要添加Slider的CHANGE事件处理函数：
 
     
-    [as3]
+    
     protected function onSliderChanged(value:Number):void {
     	//给我们的worker线程发送锐化命令.
     	mainToBack.send("SHARPEN");
     	mainToBack.send(value);
     }
-    [/as3]
+    
 
 
 然后，我们添加worker的完成任务时的响应函数。
 
     
-    [as3]
+    
     protected function onBackToMain(event:Event):void {
     	var msg:String = backToMain.receive();
     	if(msg == "SHARPEN_COMPLETE"){
@@ -145,7 +140,7 @@ initUi()方法只是简单地创建了一个slider，一个image，并且添加�
     		image.bitmapData.setPixels(image.bitmapData.rect, imageBytes);
     	}
     }
-    [/as3]
+    
 
 
 以上就完成主类的代码了！
@@ -155,7 +150,7 @@ initUi()方法只是简单地创建了一个slider，一个image，并且添加�
 worker类的结构非常简单明了：
 
     
-    [as3]
+    
     public class SharpenWorker extends Sprite
     { 
     public function SharpenWorker(){
@@ -183,7 +178,7 @@ worker类的结构非常简单明了：
     	timer.addEventListener(TimerEvent.TIMER, onTimer, false, 0, true);
     	timer.start();
     }
-    [/as3]
+    
 
 
 这里我们做了这些事：
@@ -196,7 +191,7 @@ worker类的结构非常简单明了：
 接下来，我们需要响应SHARPEN请求。这在mainToBack的监听函数里做了处理：
 
     
-    [as3]
+    
     protected function onMainToBack(event:Event):void {
     	if(mainToBack.messageAvailable){
     		//获取消息类型
@@ -207,7 +202,7 @@ worker类的结构非常简单明了：
     		}
     
     	}
-    }[/as3]
+    }
 
 
 注意下在这里我们实际上除了存储下锐化值并没有做任何事。如果每一次请求我们都立即应用锐化操作将会非常浪费性能。锐化操作需要超过500ms时间才能完成，但是主线程会以33ms的间隔发送锐化命令。所以很明显，如果我们响应每次请求将会造成巨大的堵塞。最终你的worker线程会崩溃。
@@ -215,7 +210,7 @@ worker类的结构非常简单明了：
 相反，我们在时间间隔500ms的TIMER事件处理函数里应用锐化滤镜：
 
     
-    [as3]
+    
     protected function onTimer(event:TimerEvent):void {
     	if(targetSharpen == currentSharpen){ return; } //直到锐化值改变才启动锐化
     	currentSharpen = targetSharpen;
@@ -228,7 +223,7 @@ worker类的结构非常简单明了：
     	//通知主线程锐化操作已经完成
     	backToMain.send("SHARPEN_COMPLETE");
     }
-    [/as3]
+    
 
 
 这就是所有的代码了。主线程将会发送附带锐化值的SHARPEN命令，worker线程获取到它后，更新共享的byteArray对象数据并发回SHARPEN_COMPLETE命令。一旦接收到SHARPEN_COMPLETE命令，主线程将会使用共享的byteArray数据更新位图显示对象。

@@ -1,17 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-06-06 06:25:19+00:00
 layout: post
-slug: '%e7%94%a8flex%e5%ae%9e%e7%8e%b0%e7%bd%91%e9%a1%b5%e8%87%aa%e5%8a%a8%e7%99%bb%e5%bd%95%e5%92%8c%e6%96%87%e4%bb%b6%e6%8a%93%e5%8f%96'
 title: 用Flex实现网页自动登录和文件抓取
-wordpress_id: 233
-categories:
-- AIR
-- Flash
-- FLEX
-- 互联网
-- 娱乐
+id: 233
 tags:
 - 网页抓取
 - 自动登录

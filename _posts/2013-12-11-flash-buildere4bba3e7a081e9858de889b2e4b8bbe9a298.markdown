@@ -1,14 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2013-12-11 15:16:18+00:00
 layout: post
-slug: flash-builder%e4%bb%a3%e7%a0%81%e9%85%8d%e8%89%b2%e4%b8%bb%e9%a2%98
 title: Flash Builder代码配色主题
-wordpress_id: 626
-categories:
-- Flash
-- 个人日志
+id: 626
 tags:
 - Flash Builder
 - 主题

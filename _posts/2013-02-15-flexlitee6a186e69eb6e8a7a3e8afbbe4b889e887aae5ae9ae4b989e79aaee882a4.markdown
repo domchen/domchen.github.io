@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2013-02-15 14:13:37+00:00
 layout: post
-slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e4%b8%89%e8%87%aa%e5%ae%9a%e4%b9%89%e7%9a%ae%e8%82%a4
 title: FlexLite框架解读(三):自定义皮肤
-wordpress_id: 433
-categories:
-- ActionScript
-- FlexLite
-- UI框架
-- 游戏开发
+id: 433
 tags:
 - FlexLite
 - 框架解读
@@ -24,7 +17,7 @@ tags:
 要自定义皮肤，其实是有个捷径的。框架里的每个组件都有默认皮肤，全在org.flexlite.domUI.skins.vector包下。只要照着写或者拷贝出来修改即可。这里我们先来看看如何给组件指定皮肤。<!-- more -->
 
     
-    [as3]
+    
     package
     {
     	import org.flexlite.domUI.components.TitleWindow;
@@ -51,7 +44,7 @@ tags:
     		}
     	}
     }
-    [/as3]
+    
 
 
 注意这句：
@@ -73,7 +66,7 @@ tags:
 因为TitleWindowSkin继承自PanelSkin，而它主要的样式代码也都来自PanelSkin。限于篇幅，这里就不再贴出TitleWindowSkin.as的代码了。我们直接看PanelSkin.as
 
     
-    [as3]
+    
     package org.flexlite.domUI.skins.vector
     {
     	import flash.display.Graphics;
@@ -153,7 +146,7 @@ tags:
     		}
     	}
     }
-    [/as3]
+    
 
 
 可以看到就两个方法，createChildren()负责实例化子项。这个跟第一篇里的例子差不多，就不多说了。关键是updateDisplayList()方法(如果你读了[第二篇文章](http://blog.domlib.com/articles/417.html)，就会对这个方法非常熟悉)，负责绘制外观。我们关键是要替换这部分代码，才能自定义外观。出于精简素材的考虑，默认皮肤全部使用矢量代码绘制，这样才会非常小巧。而实际项目中，我们通常是使用外部素材，位图或者SWF导出的矢量图等。那要怎么把外部的自定义素材添加到皮肤里呢？
@@ -163,17 +156,17 @@ tags:
 回到前面的问题，那不能用addChild(),我又想添加普通显示对象到框架容器里，该咋办？这里就要请出我们的桥接类UIAsset了。它是一个实现了IVisualElement接口的包装器，能让普通显示对象也具有自动布局的功能。下面我们来看下它的用法。
 
     
-    [as3]
+    
     var asset:UIAsset = new UIAsset();
     asset.skinName = "assets/panelBG.png";
     addElement(asset);
-    [/as3]
+    
 
 
 是不是很简单？只要给UIAsset.skinName赋值外部图片路径，就可以把它当做那个图片来用。而且屏蔽了异步加载的过程。那要是是已经加载好的BitmapData呢？直接改成：asset.skinName = bitmapData;结果一样。从swf里获取的导出类定义呢？asset.skinName = YourMovieClipClass;任何显示对象？asset.skinName = yourDisplayObject; 此处省略无数字......一个用法走遍天下,很爽吧？
 
 大家应该开始好奇这个skinName属性了吧，它怎么什么都能显示出来？答案在它背后的解析器。框架里提供了一个默认的skinName解析器：DefaultSkinAdapter.as
-[as3]
+
 
     
     package org.flexlite.domUI.components.supportClasses
@@ -257,7 +250,7 @@ tags:
     		}
     	}
     }
-    [/as3]
+    
 
 
 相信代码里的注释已经说明了一切。顺便说下，这个解析器实现的是ISkinAdapter。留下个接口干嘛？当然是为了扩展啊。这个解析过程是你可以自定义的！你可以在项目里实现这个接口，桥接到你的素材管理器。就可以使用关键字字符串的方式来加载素材了。完全屏蔽异步加载和解码过程！启用你的自定义解析器还是用Injector类：Injector.mapClass(ISkinAdapter,YourSkinAdapter);(框架里类似这样，预留了很多可扩展的接口，都是统一通过Injector在项目初始化时注入进去)。另外，UIAsset也是所有可定制皮肤组件(SkinnableComponent)的基类。所以你的自定义规则对所有可定制皮肤组件都有效，这还可以扩展出很多用法。抛砖引玉做完了，自己发散思维去吧。
@@ -265,7 +258,7 @@ tags:
 解决了素材添加显示的问题，再应该没什么困难的地方了吧？上面的那个面板背景素材，大多是需要自适应的。直接加上asset.percentHeight=100,asset.percentWidth=100;它就能填满窗口了。因为UIAsset是可以自动布局的组件，所以你在createChildren()方法里添加它一次即可。默认皮肤里要写updateDisplayList()方法是因为绘图函数需要每次重绘。所以现在你也不需要复写这个方法了。最后的结果应该类似这样：
 
     
-    [as3]
+    
     package org.flexlite.domUI.skins.vector
     {
     	import flash.text.TextFormatAlign;
@@ -326,7 +319,7 @@ tags:
     		}
     	}
     }
-    [/as3]
+    
 
 
 最后还有必要说下的是皮肤的状态更新。上面举的例子都是静态的面板皮肤，要是动态的，如ButtonSkin，该如何写？
@@ -346,7 +339,7 @@ commitCurrentState()是在currentState属性改变之后触发的，我们就是
 因此，如果你是使用了外部加载的素材，无论位图素材还是矢量素材。用万能的UIAsset包装一下(UIAsset.skinName=你的素材对象),然后在皮肤里addElement()这个UIAsset即可。想让它自动铺满皮肤？设置下它的percentHeight和percentWidth都为100即可。布局类会帮你做自动布局的工作，不需要你去复写updateDisplayList()。下面补充最终完整的例子，加上状态切换的代码。
 
     
-    [as3]
+    
     package org.flexlite.domUI.skins.vector
     {
     	import flash.text.TextFormatAlign;
@@ -428,7 +421,7 @@ commitCurrentState()是在currentState属性改变之后触发的，我们就是
     		}
     	}
     }
-    [/as3]
+    
 
 
 有任何疑问欢迎留言告诉我。 :)

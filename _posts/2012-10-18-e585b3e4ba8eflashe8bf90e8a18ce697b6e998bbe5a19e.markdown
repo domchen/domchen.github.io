@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-10-18 09:08:52+00:00
 layout: post
-slug: '%e5%85%b3%e4%ba%8eflash%e8%bf%90%e8%a1%8c%e6%97%b6%e9%98%bb%e5%a1%9e'
 title: 关于"Flash运行时阻塞"
-wordpress_id: 376
-categories:
-- ActionScript
-- Flash
-- 游戏开发
+id: 376
 tags:
 - Flash运行时阻塞
 - 加载

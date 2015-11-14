@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-04-22 03:20:07+00:00
 layout: post
-slug: '%e5%88%a9%e7%94%a8dictionary%e7%9a%84%e5%bc%b1%e5%bc%95%e7%94%a8%e7%89%b9%e6%80%a7%e5%ae%9e%e7%8e%b0%e5%8a%a8%e6%80%81%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86'
 title: 利用Dictionary的弱引用特性实现动态内存管理
-wordpress_id: 223
-categories:
-- ActionScript
-- Flash
-- UI框架
+id: 223
 tags:
 - Dictionary
 - 位图数据共享
@@ -20,7 +14,7 @@ tags:
 **      **这几天看了些文章，提供了一种显示对象位图化并共享位图数据的优化方案，测试了下能提高不少性能，所以想自己也实现一个试试。基本思路如下：<!-- more -->
 
     
-    [as3]
+    
     import flash.display.Bitmap;
     import flash.display.BitmapData;
     import flash.display.Sprite;
@@ -50,7 +44,7 @@ tags:
     		addChild(clip);
     	}
     }
-    [/as3]
+    
 
 
 **    **写的过程中，发现了一个老问题。共享的位图数据bitmapData是缓存在类静态变量里的。如果不显式去销毁，就永远无法被回收。而位图数据通常是最消耗内存的，不能忽视。销毁的时机当然就是所有引用这个bitmapData的实例都被回收了之后。但是我们怎么才能知道一个对象被回收了呢？答案是：不能。至少目前FP没有给我们提供内存管理的api，让我们知道什么对象要被回收了。
@@ -62,7 +56,7 @@ tags:
 **    **具体就是在初始化Dictionary时传入一个true，开启key的弱引用。然后把之前的写法调转一下，key和value换一下位置就行了。因为只有key是可以当做若引用的。下面把改过的代码再贴一遍：
 
     
-    [as3]
+    
     public class CachedSprite extends Sprite
     {
     	protected static var cachedData:Dictionary = new Dictionary(true);
@@ -93,7 +87,7 @@ tags:
     		addChild(clip);
     	}
     }
-    [/as3]
+    
 
 
 

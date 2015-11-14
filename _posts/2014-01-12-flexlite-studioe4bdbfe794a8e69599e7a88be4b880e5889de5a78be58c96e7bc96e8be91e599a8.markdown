@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2014-01-12 14:23:50+00:00
 layout: post
-slug: flexlite-studio%e4%bd%bf%e7%94%a8%e6%95%99%e7%a8%8b%e4%b8%80%e5%88%9d%e5%a7%8b%e5%8c%96%e7%bc%96%e8%be%91%e5%99%a8
 title: FlexLite Studio使用教程(一):编辑器初始化
-wordpress_id: 639
-categories:
-- ActionScript
-- Flash
-- FlexLite
-- UI框架
+id: 639
 tags:
 - FlexLite
 - FlexLite Studio

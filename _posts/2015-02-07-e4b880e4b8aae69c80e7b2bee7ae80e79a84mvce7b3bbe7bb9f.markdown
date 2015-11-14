@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2015-02-07 05:55:31+00:00
 layout: post
-slug: '%e4%b8%80%e4%b8%aa%e6%9c%80%e7%b2%be%e7%ae%80%e7%9a%84mvc%e7%b3%bb%e7%bb%9f'
 title: 一个最精简的MVC系统
-wordpress_id: 744
-categories:
-- ActionScript
-- Flash
-- 游戏开发
-- 编程理论
+id: 744
 tags:
 - MVC
 - 精简
@@ -97,7 +90,7 @@ ControllerList:控制器列表。所有功能模块的控制器都在这里实�
 
 
     
-    [as3]
+    
     package code.app
     {
     	import code.module.sample.SampleController;
@@ -124,7 +117,7 @@ ControllerList:控制器列表。所有功能模块的控制器都在这里实�
     			sampleController.start();
     		}
     	}
-    }[/as3]
+    }
 
 
 这里还需要说明一下，这只是个参考，并不用按照条条框框一层不变地去使用。可以根据实际项目的特点进行简单调整。例如在开发应用软件项目情况下，module下按功能模块分包的结构就不合理了。游戏里的功能模块可以分的比较清楚，每个模块都会有自己的数据模型，视图和控制器。而应用软件里大多数是全局互相作用的，一个功能可能只有控制器或只有数据模型。所以更合适的结构是module下直接创建四个目录：command，controller，model，view。对号入座即可。

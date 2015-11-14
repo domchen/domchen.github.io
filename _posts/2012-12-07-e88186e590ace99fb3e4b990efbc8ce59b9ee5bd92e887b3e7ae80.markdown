@@ -1,13 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-12-07 21:19:13+00:00
 layout: post
-slug: '%e8%81%86%e5%90%ac%e9%9f%b3%e4%b9%90%ef%bc%8c%e5%9b%9e%e5%bd%92%e8%87%b3%e7%ae%80'
 title: 聆听音乐，回归至简
-wordpress_id: 397
-categories:
-- 个人日志
+id: 397
 tags:
 - 豆瓣FM
 ---

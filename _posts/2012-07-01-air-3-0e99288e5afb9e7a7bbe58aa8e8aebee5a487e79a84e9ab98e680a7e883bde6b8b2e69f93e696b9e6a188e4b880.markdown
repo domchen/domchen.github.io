@@ -1,17 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-07-01 07:00:00+00:00
 layout: post
-slug: air-3-0%e9%92%88%e5%af%b9%e7%a7%bb%e5%8a%a8%e8%ae%be%e5%a4%87%e7%9a%84%e9%ab%98%e6%80%a7%e8%83%bd%e6%b8%b2%e6%9f%93%e6%96%b9%e6%a1%88%e4%b8%80
 title: AIR 3.0针对移动设备的高性能渲染方案(一)[译]
-wordpress_id: 242
-categories:
-- ActionScript
-- AIR
-- Flash
-- UI框架
-- 游戏开发
+id: 242
 tags:
 - AIR3.0
 - GPU加速
@@ -66,7 +58,7 @@ tags:
 **      **例子1，假设我有一个含有精美矢量雪球影片剪辑的FLA文件，已经导出了类名为SnowBallAsset。现在我想在GPU模式下以非常高的性能渲染它。
 
     
-    [as3]
+    
     public class SnowBall extends Sprite
     {
     //声明一个静态数据变量，这个类的所有实例都可共享它。
@@ -87,13 +79,13 @@ tags:
     mouseChildren = false;
     }
     }
-    [/as3]
+    
 
 
 **      **现在我可以方便地生成尽可能多的SnowBall()了。它们本质上都是完全由GPU加速渲染的。在这个简单的例子里，为了让它看起来正常，要注意你的素材必须要设置一个相对于0,0点的内部坐标。（但是为了提高5倍的性能，增加的这几行代码是值得的吧？） 下一个例子里，我们将写一个相似的类。但它是可以被重用的，你只需要把你要使用的素材类名传入即可。然后，你有时候可能还希望能缩放素材，但同时保持它的显示质量。这可以很容易地在上传到GPU之前，通过多倍重新采样的方式实现。
 
     
-    [as3]
+    
     public class CachedSprite extends Sprite
     {
     //声明一个缓存数据的静态属性
@@ -127,7 +119,7 @@ tags:
     mouseChildren = false;
     }
     }
-    [/as3]
+    
 
 
 ** **[更新] 后来因为一系列的留言评论，我已经更新了以上代码，让它也能适用于起始坐标不在(0,0)点的素材。这样能应该能避免任何截边现在了。

@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2013-08-23 15:43:49+00:00
 layout: post
-slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e4%ba%94systemmanager
 title: FlexLite框架解读(五):SystemManager
-wordpress_id: 504
-categories:
-- ActionScript
-- FlexLite
-- UI框架
-- 游戏开发
+id: 504
 tags:
 - FlexLite
 - SystemManager

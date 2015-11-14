@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2013-05-24 05:25:10+00:00
 layout: post
-slug: flash%e4%b8%ad%e7%9a%8464%e4%bd%8d%e6%97%a0%e7%ac%a6%e5%8f%b7%e6%95%b4%e5%9e%8b
 title: Flash中64位无符号整型的实现方法
-wordpress_id: 485
-categories:
-- ActionScript
-- Flash
-- 游戏开发
-- 编程理论
+id: 485
 tags:
 - 64位无符号整型
 - flash
@@ -21,7 +14,7 @@ tags:
 跟后端socket通信经常会用到64位的无符号整型uint，通常用来表示用户id。但是Flash中的uint是32位的，Number也只能存储到53位。所以会存在溢出的可能。有两种解决方案，一种是让后端把id都存储成字符串。另一种是前端实现一个能够读取uint64的类。因为后端的大爷们通常不会接受字符串的方式。所以我们发扬下精神，写个类来兼容他们发过来的uint64吧。网上通常流传的一种实现思路是用Number来伪造uint64，当传过来的ID值小于53位时是没问题，但是大于的时候就会溢出了。这里我们说一种字符串的实现思路，是真正的64位数据，所以不会有溢出的可能。<!-- more -->
 
     
-    [as3]
+    
     package org.flexlite.domUtils
     {
     	import flash.utils.ByteArray;
@@ -206,7 +199,7 @@ tags:
     		}
     	}
     }
-    [/as3]
+    
 
 
 原理简单说就是：ByteArray是可以存储任意长度数据的，后端发过来的uint64在ByteArray里存储为两个uint，头32位也就是4字节是uint64的低32位。后面4字节是uint64的高32位。可以采用两次ByteArray.readUnsignedInt()方法分别读取低32位和高32位的数字。实际的数字大小就是lowerUint+higherUint*2^32。很显然，这个计算结果我们是没法用一个数字变量保存下来的。但我们可以用字符数组来保存结果。所以问题就归结到两个转换过程上，如何把高低位的两个uint转换成指定进制的字符串。反之如何把指定进制的字符串转换为高低位的两个uint。这样就可以通过这两个uint跟后端通信了。

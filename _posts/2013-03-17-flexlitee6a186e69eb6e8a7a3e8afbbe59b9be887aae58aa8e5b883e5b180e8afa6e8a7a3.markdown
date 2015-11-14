@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2013-03-17 06:28:59+00:00
 layout: post
-slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e5%9b%9b%e8%87%aa%e5%8a%a8%e5%b8%83%e5%b1%80%e8%af%a6%e8%a7%a3
 title: FlexLite框架解读(四):自动布局详解
-wordpress_id: 452
-categories:
-- ActionScript
-- Flash
-- FlexLite
-- UI框架
+id: 452
 tags:
 - FlexLite
 - 框架解读
@@ -28,7 +21,7 @@ tags:
 以上内容告诉我们，实现自动布局的关键就是复写measure()和updateDisplayList()这两个方法。而我们在UIComponent里可以看到，这两个方法的方法体是空的，也就是说UIComponent是不具有自动布局功能的，它的子项组件才有。那么我们就先来看最重要的一个自动布局实现类：GroupBase容器基类。它是Group和DataGroup的基类，也就是说，所有容器和列表容器，都是继承自它的布局方法。那它就一个类，是如何实现的多种多样的布局方式的呢？答案是：它不负责具体的布局规则，而是做了一个解耦处理。增加了一个layout的属性，类型为LayoutBase。我们先看下GroupBase的那两个方法体里写了什么：
 
     
-    [as3]
+    
     
     override protected function measure():void
     {
@@ -48,7 +41,7 @@ tags:
     		_layout.updateScrollRect(unscaledWidth, unscaledHeight);
     	}
     }
-    [/as3]
+    
 
 
 我们先忽略无关的代码(比如layoutInvalidateSizeFlag和layoutInvalidateDisplayListFlag),剩下的就很容易看明白了，GroupBase把自己的measure()方法交给了layout.measure()去实现，updateDisplayList()交给了layout.updateDisplayList()去实现。也就是说，GroupBase把具体的布局方式(那两个方法的方法体)解耦了出来，成了独立的一个类LayoutBase。这样所有的容器都可以采用组合的方式，为自己设置任意的布局。再去看LayoutBase类，它有一个target属性，类型是GroupBase。LayoutBase的子类，就是通过在measure()和updateDisplayList()中操作target，而实现对目标容器的布局的。

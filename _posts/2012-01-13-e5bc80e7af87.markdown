@@ -1,13 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-01-13 14:55:00+00:00
 layout: post
-slug: '%e5%bc%80%e7%af%87'
 title: 开篇
-wordpress_id: 5
-categories:
-- 个人日志
+id: 5
 ---
 
 博客开通了，以后有程序方面的心得体会，或者需要记录的东西，都可以放上来。对自己的也是个锻炼。希望能坚持写下去！

@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-02-13 16:43:28+00:00
 layout: post
-slug: '%e5%91%bd%e4%bb%a4%e8%a1%8c%e7%bc%96%e8%af%91%e5%b7%a5%e5%85%b7mxmlc'
 title: 命令行编译工具mxmlc
-wordpress_id: 161
-categories:
-- Flash
-- FLEX
-- UI框架
+id: 161
 tags:
 - mxmlc
 - UI

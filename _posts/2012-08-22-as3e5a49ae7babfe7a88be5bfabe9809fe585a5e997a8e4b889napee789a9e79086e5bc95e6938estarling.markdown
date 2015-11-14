@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-08-22 17:06:50+00:00
 layout: post
-slug: as3%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8%e4%b8%89nape%e7%89%a9%e7%90%86%e5%bc%95%e6%93%8estarling
 title: AS3多线程快速入门(三):NAPE物理引擎+Starling[译]
-wordpress_id: 345
-categories:
-- 3D
-- ActionScript
-- Flash
+id: 345
 tags:
 - Flash Player11.4
 - Nape
@@ -57,7 +51,7 @@ tags:
 到现在，你应该对基于Worker的应用程序的代码模板比较熟悉了吧：
 
     
-    [as3]
+    
     public function NapeWorkerExample()
     {
     registerClassAlias("SpritePosition", SpritePosition);
@@ -113,7 +107,7 @@ tags:
     	napeWorker = new NapeWorker();
     }
     }
-    [/as3]
+    
 
 
 文档类的第一部分是标准的Worker初始化操作，创建Worker，MessageChannels等对象。然后我们创建了一些基本的UI来监控统计数据，接着初始化Starling。
@@ -127,7 +121,7 @@ tags:
 在buildWalls()里，我们让worker线程添加一些静态物体，并传递给它一个形状数组。
 
     
-    [as3]
+    
     protected function buildWalls():void {
     	var thickness:int = 50;
     	var width:int = stage.stageWidth;
@@ -144,13 +138,13 @@ tags:
     	channelToWorker.send(MessageType.ADD_STATIC_BODY);
     	channelToWorker.send(shapes);
     }
-    [/as3]
+    
 
 
 你会注意到我声明了一个简单的MessageType类来定义我使用的各种消息类型：
 
     
-    [as3]
+    
     package
     {
     public class MessageType
@@ -160,13 +154,13 @@ tags:
             public static var ADD_STATIC_BODY:String = "addStaticBody";
     }
     }
-    [/as3]
+    
 
 
 在buildPyramid()里，我们让worker线程创建了大约800个动态物体，并添加到世界中。我们还为它们创建了图形化的表示对象，并作为Starling图片添加到显示列表。
 
     
-    [as3]
+    
     //通过多次调用addBox()创建一个"金字塔"...
     protected function buildPyramid():void{
     	var boxw:Number = 25;
@@ -198,7 +192,7 @@ tags:
     	channelToWorker.send(MessageType.ADD_BOX);
     	channelToWorker.send(data);
     }
-    [/as3]
+    
 
 
 主线程的最后一部分，我们现在要研究的是触发拖拽操作的代码。要实现这个，我们需要做几个简单的事：
@@ -209,7 +203,7 @@ tags:
 为了实现这个，我们要添加一个ENTER_FRAME处理函数，当然也要有MOUSE_UP和MOUSE_DOWN事件处理函数。
 
     
-    [as3]
+    
     protected function onEnterFrame(event:flash.events.Event):void {
     	//传入mouseX和mouseY的值给worker线程，让它能获取鼠标下的任何东西
     	worker.setSharedProperty("mouseX", mouseX);
@@ -223,7 +217,7 @@ tags:
     protected function onMouseUp(event:MouseEvent):void {
     	channelToWorker.send(MessageType.STOP_DRAG);
     }
-    [/as3]
+    
 
 
 在这个类里要做的最后一件事是从ByteArray里读取物理对象的位置列表，并把这些值应用到Starling图片上。在做这个之前，我们需要先看看包含Nape物理引擎的线程本身。
@@ -238,7 +232,7 @@ tags:
 4.添加一个监听函数来响应来自主线程的消息。
 
     
-    [as3]
+    
     public function NapeWorker(){
     	//初始化Nape
     	space = new Space(new Vec2(0, 600));
@@ -266,7 +260,7 @@ tags:
     	channelToWorker = worker.getSharedProperty("channelToWorker");
     	channelToWorker.addEventListener(Event.CHANNEL_MESSAGE, onMessageFromMain);
     }
-    [/as3]
+    
 
 
 再次注意下，我们必须调用registerClassAlias()方法来支持自定义的数据类（即使是一些原生的类比如Rectangle也需要）。
@@ -274,7 +268,7 @@ tags:
 下一步是实现一个事件监听函数来响应来自主线程的消息。
 
     
-    [as3]
+    
     protected function onMessageFromMain(event:Event):void {
     	var msg:String = channelToWorker.receive();
     
@@ -315,7 +309,7 @@ tags:
     		hand.active = false;
     	}
     }
-    [/as3]
+    
 
 
 你可以看到，这个函数就像是一个处理事件的路由器一样，根据事件类型，调用内部对应的方法。
@@ -325,7 +319,7 @@ tags:
 让我们先看看addStaticBody()方法，其中涉及了一些简单的Nape接口。
 
     
-    [as3]
+    
     /**
      * 添加一个静态物体(墙，地板等，可以包含多个形状)
      **/
@@ -337,13 +331,13 @@ tags:
     	}
     	border.space = space;
     }
-    [/as3]
+    
 
 
 然后是addBox()方法，它稍微有点复杂(请阅读行内注释)。
 
     
-    [as3]
+    
     /**
      * 添加一个新的“盒子”物体
      **/
@@ -360,7 +354,7 @@ tags:
     	sprites.push(dummySprite);
     	box.graphic = dummySprite;
     }
-    [/as3]
+    
 
 
 接下来是程序真正的关键部分了，我们将序列化所有的位置数据然后发回给主线程。这需要非常快的速度，如果反序列化1000个物体需要花费8ms时间的话，我们在主线程已经延误了一半的渲染时间。
@@ -372,7 +366,7 @@ tags:
 最快的方式是手动封装你的数据到ByteArray，我们直接写入Number和String的值到ByteArray对象，而不是写入每个Object。使用这个方式，我们可以在1ms内序列化5000个对象！
 
     
-    [as3]
+    
     
     /**
      * 复制NapeSprites的位置信息到byteArray
@@ -400,7 +394,7 @@ tags:
     
     }
     
-    [/as3]
+    
 
 
 很简单对吧!?我们只要一个接一个地把数据封装进ByteArray，然后按同样的顺序读取它们就行了。哈，这是有点简单，但是速度快的跟狗屎一样！
@@ -410,7 +404,7 @@ tags:
 你可以看到，如果worker线程向主线程发送消息动作。在主线程的监听函数里，我们将监听PHYSICS_COMPLETE消息，然后运行的基本上是上面函数的一个相反版本：
 
     
-    [as3]
+    
     
     protected function onMessageFromWorker(event:flash.events.Event):void {
     	var msg:String = channelToMain.receive();
@@ -437,7 +431,7 @@ tags:
     
     }
     
-    [/as3]
+    
 
 
 这就是它！你现在就拥有了一个完整的，运行在另一个线程的Stage3D里的物理系统!

@@ -1,16 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2014-07-27 15:47:26+00:00
 layout: post
-slug: '%e5%86%99%e5%9c%a8egretwing%e5%87%ba%e6%9d%a5%e4%b9%8b%e5%89%8d'
 title: 写在EgretWing出来之前
-wordpress_id: 706
-categories:
-- Egret
-- FLEX
-- FlexLite
-- UI框架
+id: 706
 tags:
 - Egret GUI
 - EgretWing

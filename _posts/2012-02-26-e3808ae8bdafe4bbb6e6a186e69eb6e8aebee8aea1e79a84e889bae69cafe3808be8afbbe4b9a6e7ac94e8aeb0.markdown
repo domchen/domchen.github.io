@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-02-26 06:32:58+00:00
 layout: post
-slug: '%e3%80%8a%e8%bd%af%e4%bb%b6%e6%a1%86%e6%9e%b6%e8%ae%be%e8%ae%a1%e7%9a%84%e8%89%ba%e6%9c%af%e3%80%8b%e8%af%bb%e4%b9%a6%e7%ac%94%e8%ae%b0'
 title: 《软件框架设计的艺术》读书笔记
-wordpress_id: 171
-categories:
-- FLEX
-- UI框架
-- 编程理论
+id: 171
 tags:
 - 依赖注入
 - 软件框架设计的艺术

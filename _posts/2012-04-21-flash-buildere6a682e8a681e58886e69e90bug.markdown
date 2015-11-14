@@ -1,13 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-04-21 09:16:41+00:00
 layout: post
-slug: flash-builder%e6%a6%82%e8%a6%81%e5%88%86%e6%9e%90bug
 title: Flash Builder概要分析BUG
-wordpress_id: 217
-categories:
-- 个人日志
+id: 217
 ---
 
 **      **一句话结束：Flash Builder里运行概要分析不能使用单机调试版的FP去测试，得到的数据总是内存没有被回收,Web版的和Air版的调试都没问题,并且若你的工作空间路径包含中文，概要分析将无法运行。

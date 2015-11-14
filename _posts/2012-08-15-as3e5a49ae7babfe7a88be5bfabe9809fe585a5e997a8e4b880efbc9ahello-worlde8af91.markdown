@@ -1,14 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-08-15 17:08:07+00:00
 layout: post
-slug: as3%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8%e4%b8%80%ef%bc%9ahello-world%e8%af%91
 title: AS3多线程快速入门(一)：Hello World[译]
-wordpress_id: 319
-categories:
-- ActionScript
-- Flash
+id: 319
 tags:
 - Flash Player11.4
 - 多线程
@@ -57,14 +52,14 @@ tags:
 这是传递数据最简单但是功能也最有限的方式。你可以调用worker.setSharedProperty(“key”, value)来设置数据，然后在另一边用WorkerDomain.current.getSharedProperty(“key”)来获取它们。示例代码：
 
     
-    [as3]
+    
     //在主线程里
     worker.setSharedProperty("foo", true);
     
     //在worker线程里
     var foo:Boolean = Worker.current.getSharedProperty("foo");
     
-    [/as3]
+    
 
 
 你在这里存储简单或者复杂对象都可以，但对于多数情况下，存储的数据都是被序列化过的，它并不是真的被共享着。如果一个数据对象在一边改变了，在另一边并不会同步更新，直到等你再次调用了set/get方法后它才会更新。
@@ -76,7 +71,7 @@ tags:
 MessageChannels就像是一个worker到另一个的单向通行管道。它们结合使用了事件机制和简单队列系统。你在一端调用channel.send()方法，在另一端一个就会抛出一个Event.CHANNEL_MESSAGE事件。在事件的处理函数里，你可以调用channel.receive()来接收发送过来的数据。就像我提到的，这个方法类似队列。所以，你可以在两边send()或receive()多次。示例代码：
 
     
-    [as3]
+    
     //在主线程里
     mainToWorker.send("ADD");
     mainToWorker.send(2);
@@ -95,7 +90,7 @@ MessageChannels就像是一个worker到另一个的单向通行管道。它们�
         }
     
     }
-    [/as3]
+    
 
 
 MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你想在多少个worker之间共享它都是可以的。不过它们都只能有一个发送终点。这样，约定以它们的接收者来命名似乎不错。例如channelToWorker或者channelToMain。
@@ -103,7 +98,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
 示例代码：
 
     
-    [as3]
+    
     //在主线程里
     workerToMain = worker.createMessageChannel(Worker.current);
     worker.setSharedProperty("workerToMain", workerToMain);
@@ -114,7 +109,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
     //在worker线程里
     workerToMain = Worker.current.getSharedPropert("workerToMain");
     mainToWorker= Worker.current.getSharedPropert("mainToWorker");
-    [/as3]
+    
     
     对于MessageChannel和sharedProperties通信方式都有一个重要的限制，当数据发送时它们都被序列化了。这意味它们需要被解析，传输然后在另一端还原。这个的性能开销是比较大的。由于这个限制，这两种通信方式最好是应用于间隙性地传递小规模数据上。
     
@@ -151,7 +146,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
 
 
     
-    [as3]
+    
     public class HelloWorldWorker extends Sprite{
     
     protected var mainToWorker:MessageChannel;
@@ -199,7 +194,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
     	}
     }
     }
-    [/as3]
+    
 
 
 跟着下面步骤一步一步来：
@@ -216,7 +211,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
 现在我们已经有了共享的MessageChannels对象，我们可以轻松地在worker之间通信了。你可以看到在上面的代码中，我们已经给对象引用设置了事件监听了。所以剩下的事就是创建它们：
 
     
-    [as3]
+    
     //从主线程接收信息
     protected function onMainToWorker(event:Event):void {
     	var msg:* = mainToWorker.receive();
@@ -231,7 +226,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
     	//打印输出worker里接收到的任何消息
     	trace("[Worker] " + workerToMain.receive());
     }
-    [/as3]
+    
 
 
 如果你现在运行这个程序，将会看见每隔1000ms“HELLO”和“WORLD”就被打印一次。祝贺你完成了你的第一个多线程应用程序！
@@ -243,7 +238,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
 首先，让我们修改interval函数，让它看起来像这样：
 
     
-    [as3]
+    
     //设置一个时间间隔让Worker线程做一些数学计算
     setInterval(function(){
     	mainToWorker.send("ADD");
@@ -251,13 +246,13 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
     	mainToWorker.send(2);
             trace("[Main] ADD 2 + 2?");
     }, 1000);
-    [/as3]
+    
 
 
 然后我们再修改worker里的事件监听函数，来获取这些值：
 
     
-    [as3]
+    
     protected function onMainToWorker(event:Event):void {
     	var msg:* = mainToWorker.receive();
     	if(msg == "ADD"){
@@ -268,7 +263,7 @@ MessageChannels对象使用worker.setSharedProperty()来实现共享，所以你
     		workerToMain.send(val1 + val2);
     	}
     }
-    [/as3]
+    
 
 
 就是这样！如果你现在运行这个程序，你将会看见“[Main] ADD 2 + 2?”，然后正确答案“4″会被输出。

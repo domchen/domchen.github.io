@@ -1,14 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-11-25 07:31:49+00:00
 layout: post
-slug: '%e5%8e%8b%e7%bc%a9%e6%b5%8b%e8%af%95lzma-vs-zlib'
 title: 压缩测试:LZMA vs ZLIB
-wordpress_id: 388
-categories:
-- ActionScript
-- Flash
+id: 388
 tags:
 - LZMA
 - 压缩
@@ -18,7 +13,7 @@ Flash Player11.4之后提供了LZMA的压缩支持，网上一直说这种压缩
 
     
     
-    [as3]
+    
     
     package
     {
@@ -57,7 +52,7 @@ Flash Player11.4之后提供了LZMA的压缩支持，网上一直说这种压缩
     			trace("LZMA.AS解压:"+(getTimer()-t)+"ms");
     		}
     	}
-    }[/as3]
+    }
 
 
 输出结果：

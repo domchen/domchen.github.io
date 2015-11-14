@@ -1,22 +1,12 @@
 ---
 author: dom
-comments: true
 date: 2013-11-19 03:24:21+00:00
 layout: post
-slug: flexlite%e6%b8%b8%e6%88%8fui%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88
 title: FlexLite游戏UI解决方案
-wordpress_id: 597
-categories:
-- ActionScript
-- Flash
-- FLEX
-- FlexLite
-- UI框架
-- 游戏开发
+id: 597
 tags:
 - FlexLite
 - FlexLite Studio
-- UI框架
 - 工作流
 - 游戏UI
 - 解决方案

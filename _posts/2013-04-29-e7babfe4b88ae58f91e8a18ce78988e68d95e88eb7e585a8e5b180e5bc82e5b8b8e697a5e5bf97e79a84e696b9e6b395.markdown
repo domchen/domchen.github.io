@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2013-04-29 04:48:47+00:00
 layout: post
-slug: '%e7%ba%bf%e4%b8%8a%e5%8f%91%e8%a1%8c%e7%89%88%e6%8d%95%e8%8e%b7%e5%85%a8%e5%b1%80%e5%bc%82%e5%b8%b8%e6%97%a5%e5%bf%97%e7%9a%84%e6%96%b9%e6%b3%95'
 title: 线上发行版捕获全局异常日志的方法
-wordpress_id: 475
-categories:
-- ActionScript
-- Flash
-- 游戏开发
+id: 475
 tags:
 - 全局异常
 - 堆栈信息
@@ -24,7 +18,7 @@ tags:
 ErrorTest.as
 
     
-    [as3]
+    
     package
     {
     	import flash.display.Sprite;
@@ -85,13 +79,13 @@ ErrorTest.as
     		}
     	}
     }
-    [/as3]
+    
 
 
 ErrorDispatcher.as
 
     
-    [as3]
+    
     package org.domlib.test
     {
     
@@ -107,7 +101,7 @@ ErrorDispatcher.as
     		}
     	}
     }
-    [/as3]
+    
 
 
 运行结果：

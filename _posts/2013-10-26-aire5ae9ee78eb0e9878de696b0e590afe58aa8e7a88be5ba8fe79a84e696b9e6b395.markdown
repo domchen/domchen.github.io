@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2013-10-26 07:45:28+00:00
 layout: post
-slug: air%e5%ae%9e%e7%8e%b0%e9%87%8d%e6%96%b0%e5%90%af%e5%8a%a8%e7%a8%8b%e5%ba%8f%e7%9a%84%e6%96%b9%e6%b3%95
 title: AIR实现重新启动程序的方法
-wordpress_id: 577
-categories:
-- ActionScript
-- AIR
-- FLEX
+id: 577
 tags:
 - AIR
 - 程序
@@ -19,7 +13,7 @@ tags:
 代码非常简单：
 
     
-    [as3]
+    
     private function reboot():void
     {
     	var mgr:ProductManager = new ProductManager("airappinstaller");
@@ -27,7 +21,7 @@ tags:
     	NativeApplication.nativeApplication.exit();
     }
     
-    [/as3]
+    
 
 
 要注意几点：

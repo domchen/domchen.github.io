@@ -1,14 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2015-07-12 16:41:16+00:00
 layout: post
-slug: lark%e6%96%b0%e7%89%b9%e6%80%a7%e8%a7%a3%e8%af%bb%ef%bc%88%e4%b8%80%ef%bc%89
 title: Lark新特性解读（一）
-wordpress_id: 761
-categories:
-- Lark
-- 编程理论
+id: 761
 tags:
 - Lark
 - 新特性解读

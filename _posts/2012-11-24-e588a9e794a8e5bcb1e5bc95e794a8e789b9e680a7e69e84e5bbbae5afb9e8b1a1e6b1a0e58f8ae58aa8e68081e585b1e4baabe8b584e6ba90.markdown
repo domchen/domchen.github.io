@@ -1,14 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-11-24 17:42:44+00:00
 layout: post
-slug: '%e5%88%a9%e7%94%a8%e5%bc%b1%e5%bc%95%e7%94%a8%e7%89%b9%e6%80%a7%e6%9e%84%e5%bb%ba%e5%af%b9%e8%b1%a1%e6%b1%a0%e5%8f%8a%e5%8a%a8%e6%80%81%e5%85%b1%e4%ba%ab%e8%b5%84%e6%ba%90'
 title: 利用弱引用特性构建对象池及动态共享资源
-wordpress_id: 384
-categories:
-- ActionScript
-- UI框架
+id: 384
 tags:
 - 动态内存管理
 - 对象池
@@ -22,7 +17,7 @@ tags:
 [Recycler.as](http://blog.domlib.com/wp-content/uploads/2012/11/Recycler.as)<!-- more -->
 
     
-    [as3]
+    
     package org.flexlite.domUtils
     {
     	import flash.utils.Dictionary;
@@ -72,7 +67,7 @@ tags:
     		}
     	}
     }
-    [/as3]
+    
 
 
 这个类简单的我都不好意思贴出来。但是它在构建对象池技术时确实非常非常有用。简单解释下对象池：当你在一段时间内需要重复实例化数量巨大的相同实例时，出于性能优化考虑，你应该采用对象池技术，顾名思义就是对象用完了不直接删除，而是缓存起来，下次需要时就不用再new一个新的对象，而是从池子里取出来。这能节省巨大性能的开销。但是一般的对象池都是用数组保存的。也就是说你要设计个机制去手动删除缓存的对象列表，否则它们永远不会被回收。而什么时间去删除比较合适呢？太早了影响重用，太晚了影响内存回收。而使用弱引用则完全没有这个问题。弱引用相当于这个引用不算在引用计数里，但是你又能通过这个引用访问到它。当一个对象的外部引用为0时(当然不包括我们的弱引用啦)，FP就会标记它可以回收，注意FP并不是立即回收它。这就正好让我们可以在不影响它正常回收过程的前提下，又能解决瞬时大量对象重用的需求。而且使用这个类来实现对象池极其简单，不用任何额外的机制，你创建一个Recycler实例即可。当回收对象时就：recycler.push(object)，要取出时：object = recycler.get()。是不是太简单了？ ：)
@@ -82,7 +77,7 @@ tags:
 [SharedMap.as](http://blog.domlib.com/wp-content/uploads/2012/11/SharedMap.as)
 
     
-    [as3]
+    
     package org.flexlite.domUtils
     {
     	import flash.utils.Dictionary;
@@ -277,7 +272,7 @@ tags:
     		}
     	}
     }
-    [/as3]
+    
 
 
 这个工具类主要用于动态共享素材资源。其实就是实现[《利用Dictionary的弱引用特性实现动态内存管理》](http://blog.domlib.com/articles/223.html)这篇文章里说的内容，只不过是增强了一下。如果完全用key-value倒转的方式来存数据，带来的问题就是每次查询都要遍历，当数据量小的时候还无所谓，数据量巨大的时候查询效率就低了。这个工具类采用了用分组的方式解决这个问题。只要在构造函数里传入分组大小即可。内部机制就是用多个Dictionary来分别存储。虽然内存上去了一点(基本可忽略)。但是能有效解决查询效率问题。最极端的情况当然是把分组大小设置为1，这样查询效率是最高的，跟原生的应该没啥区别了。内存和cpu不可兼得，权衡一个值即可。测试的时候分组设置为200左右，跟原生的查询时间差不多。所以感觉再低也没什么必要了。使用很简单：sharedMap.set(key,value),value = sharedMap.get(key)。 当做普通键值对来存储即可。不用关心底层key-value掉转的问题。

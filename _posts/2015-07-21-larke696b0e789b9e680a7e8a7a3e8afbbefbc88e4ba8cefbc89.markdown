@@ -1,14 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2015-07-21 15:58:28+00:00
 layout: post
-slug: lark%e6%96%b0%e7%89%b9%e6%80%a7%e8%a7%a3%e8%af%bb%ef%bc%88%e4%ba%8c%ef%bc%89
 title: Lark新特性解读（二）
-wordpress_id: 764
-categories:
-- Lark
-- 编程理论
+id: 764
 tags:
 - Lark
 - 屏幕适配

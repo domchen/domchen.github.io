@@ -1,15 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2014-11-29 10:48:37+00:00
 layout: post
-slug: as3%e7%b1%bb%e5%9c%a8%e7%ac%ac%e4%b8%80%e8%a1%8c%e6%8a%a5override%e9%94%99%e8%af%af%e8%a7%a3%e5%86%b3%e6%96%b9%e6%b3%95
 title: AS3类在第一行报override错误解决方法
-wordpress_id: 732
-categories:
-- ActionScript
-- AIR
-- Flash
+id: 732
 tags:
 - override
 - 报错

@@ -1,17 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-08-02 15:01:55+00:00
 layout: post
-slug: air-3-0%e9%92%88%e5%af%b9%e7%a7%bb%e5%8a%a8%e8%ae%be%e5%a4%87%e7%9a%84%e9%ab%98%e6%80%a7%e8%83%bd%e6%b8%b2%e6%9f%93%e6%96%b9%e6%a1%88%e4%ba%8c%e8%af%91
 title: AIR 3.0针对移动设备的高性能渲染方案(二)[译]
-wordpress_id: 291
-categories:
-- ActionScript
-- AIR
-- Flash
-- UI框架
-- 游戏开发
+id: 291
 tags:
 - AIR3.0
 - GPU加速
@@ -34,7 +26,7 @@ tags:
 ** **以下代码最简洁地表达了它的形式：
 
     
-    [as3]
+    
     public class MyClass {
         protected static var cache:bitmapData;
     
@@ -43,7 +35,7 @@ tags:
             addChild(new Bitmap(cache)); //Bitmap包装器共享同一份bitmapData
         }
     }
-    [/as3]
+    
 
 
 ** **现在不同之处在于，我们要共享一个数组的bitmapData列表，而不是单一的bitmapData。再认真读一遍这句话的意思。好的，我们还要缓存下frameLabels数据，这样就可以使用gotoAndPlay()方法了。
@@ -78,13 +70,13 @@ tags:
 ** **嵌入JSON和Bitmap非常简单：
 
     
-    [as3]
+    
     [Embed("assets/Animation.png")]
     public var AnimationImage:Class;
     
     [Embed("assets/Animation.json", mimeType="application/octet-stream")]
     public var AnimationData:Class;
-    [/as3]
+    
 
 
 ** **接下来你需要一个类来操作这些对象，然后想办法播放它们。必不可少的一步是分析Zoe导出的JSON文件，然后从大位图里裁剪出校位图序列。你还需要设计一个API来播放这些帧序列，用每帧切换位图的方法，作为你MovieClip的基本API。
@@ -92,7 +84,7 @@ tags:
 ** **我写了一个简单的类来辅助实现这个功能，命名为SpriteSheetClip.
 
     
-    [as3]
+    
     //传入从Zoe导出的数据...
     var mc:SpriteSheetClip = new SpriteSheetClip(AnimationImage, AnimationData);
     mc.gotoAndPlay("someLabel");
@@ -102,13 +94,13 @@ tags:
     function onEnterFrame(event:Event):void {
           cachedAnimation.step();
     }
-    [/as3]
+    
 
 
 ** **SpriteSheetClip直接继承于Bitmap，并模拟了MovieClip的接口，完整的整个类就不过一遍了，下面代码的核心功能是缓存并裁切传入的SpriteSheet。注意下这两部分：怎么通过JSON数据获得帧宽度与帧高度和利用getQualifiedClassName()方法获取素材的唯一标识符。剩下的都是简单的循环了。
 
     
-    [as3]
+    
     public static var frameCacheByAsset:Object = {};
     
     public function SpriteSheetClip(bitmapAsset:Class, jsonAsset:Class){
@@ -176,7 +168,7 @@ tags:
     this.bitmapData = frameCache[_currentStartFrame-1];
     
     }
-    [/as3]
+    
 
 
 ** **现在，利用这个类，我们能创建同一个动画的多个副本，然后以非常高的性能运行它们。你能够同屏播放100个动画，甚至在最古老的Android设备上。而在较新一些的设备比如IPad2或者Galaxy Nexus，你可以一次跑满500至800个动画。并且缩放，调整透明度，旋转这些操作性能都非常高。

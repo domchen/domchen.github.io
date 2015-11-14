@@ -1,17 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2012-12-09 14:09:18+00:00
 layout: post
-slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e4%b8%80%e7%9a%ae%e8%82%a4%e5%88%86%e7%a6%bb%e6%9c%ba%e5%88%b6
 title: FlexLite框架解读(一):皮肤分离机制
-wordpress_id: 407
-categories:
-- ActionScript
-- Flash
-- FLEX
-- FlexLite
-- UI框架
+id: 407
 tags:
 - FlexLite
 - 框架解读
@@ -32,7 +24,7 @@ tags:
 UIPanel.as
 
     
-    [as3]
+    
     package
     {
     	import flash.events.MouseEvent;
@@ -83,7 +75,7 @@ UIPanel.as
     		}
     	}
     }
-    [/as3]
+    
 
 
 既然是分离，当然是至少是得有两个文件才算分离吧，皮肤分离版本应该这样写：
@@ -91,7 +83,7 @@ UIPanel.as
 UIPanel.as
 
     
-    [as3]
+    
     package
     {
     	import flash.events.MouseEvent;
@@ -143,13 +135,13 @@ UIPanel.as
     		}
     	}
     }
-    [/as3]
+    
 
 
 UIPanelSkin.as
 
     
-    [as3]
+    
     package
     {
     	import org.flexlite.domUI.components.Button;
@@ -188,7 +180,7 @@ UIPanelSkin.as
     			addElement(closeButton);
     		}
     	}
-    }[/as3]
+    }
 
 
 先解释下皮肤分离的运行原理：UIPanel是逻辑组件，UIPanelSkin是皮肤组件。我们为UIPanel的skinName属性指定了UIPanelSkin类定义，把他们关联起来。当UIPanel初始化的时候，就会new一个UIPanelSkin的实例，并添加为自己的唯一子项。然后自动匹配双方的同名变量(具体匹配规则参考SkinPartUtil类)。把UIPanelSkin的closeButton和titleDisplay引用赋值到逻辑组件的对应属性上。这样在逻辑组件里就持有初始化好了的子项，我们只为需要运行时控制的子项声明同名变量，以持有其引用。子项注入的时候会调用逻辑组件的partAdded(子项名属性名，子项实例)方法，我们在这里做一些除了布局和样式以外的初始化操作，比如监听事件和设置逻辑组件定制的数据(titleDisplay.text="这个窗口的标题")。逻辑组件里只有逻辑控制代码，布局和样式完全交给皮肤组件实现，并且逻辑组件能通过同名变量直接操作皮肤的子项，就好像它们是自己的子项一样。(为了好理解，这里就先简单说这么多，还有视图状态什么的就先不讨论了)

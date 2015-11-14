@@ -1,13 +1,9 @@
 ---
 author: dom
-comments: true
 date: 2015-08-01 12:42:39+00:00
 layout: post
-slug: typescript%e8%bf%9b%e9%98%b6%e7%8e%a9%e6%b3%95
 title: TypeScript进阶玩法
-wordpress_id: 836
-categories:
-- TypeScript
+id: 836
 tags:
 - TypeScript
 - 进阶
@@ -16,17 +12,17 @@ tags:
 本来这篇文章准备写一下TypeScript的各种语法特性。发现N神的那篇博客《[从 ActionScript3 到 TypeScript](http://www.nshen.net/article/2013-05-18/as3-to-typescript/)》好像又更新了，对TS的语法覆盖已经挺全的了。那这篇文章就接着N神的博客，写一下部分进阶部分的内容吧。另外，推荐从ActionScript3转到TypeScript上的童鞋，同时可以看一下这篇关于JavaScript的教程，对理解TypeScript也非常有帮助：《[JavaScript秘密花园](http://bonsaiden.github.io/JavaScript-Garden/zh/)》。
 
 
-# **类型推理**
+# 类型推理
 
 
 对于从AS3转过来的童鞋，包括我，一开始可能都不太熟悉类型推理这个功能，还强迫症似的把每个变量的类型都显式写上。但在使用了类型推理功能后一段时间，我深深感受到了这个功能的强大，再也不愿意回到没有类型推理的语言里了。现在各种现代语言的编译器都已经支持类型推理，当然也包括TypeScript的编译器。类型推理简单说就是编译器提供的一种语法便利，能够让你可以不用声明变量的类型，但是并不会影响强类型的判断，而是在第一次对变量赋值的时候，编译器会自动推理出这个变量的类型。从而让你写出更加简洁的代码。如下面的例子：
 
     
-    [as3]
+    
     var display = new Shape();
     display.x = 10; //编译通过
     display.getChildAt(0); //编译报错，display上不存在getChildAt()方法。
-    [/as3]
+    
     
 
 
@@ -44,18 +40,18 @@ tags:
 在AS3中是这么定义的：
 
     
-    [as3]
+    
     addEventListener(type:String, listener:Function, ...args):void
-    [/as3]
+    
     
 
 
 而在TypeScript中可以这么定义：
 
     
-    [as3]
+    
     addEventListener(type:string, listener:(event:Event)=>void, ...args):void
-    [/as3]
+    
     
 
 
@@ -72,11 +68,11 @@ tags:
 而在TypeScript中，我们可以用更简单且有效的方式，来避免这种无法描述的情况，就是使用复合类型：
 
     
-    [as3]
+    
     class Image {
         public source:BitmapData|string;
     }
-    [/as3]
+    
     
 
 
@@ -89,18 +85,18 @@ tags:
 TypeScript中的接口跟AS3中的接口不太一样，代表的含义更加广泛，可以说是无处不在。它不仅仅指使用interface关键字定义的区块，还包括用一对{}括号定义的部分。来看一个例子：
 
     
-    [as3]
+    
     function handle(data:{id:number;label:string;}):void{
         //doing something here...
     }
-    [/as3]
+    
     
 
 
 以上定义了一个名为handle的函数，参数只有一个data，我们要关注的是data的类型：{id:string;label:string;}，{}括号内表示的就是一个接口。具体含义是：传入的data对象必须符合此接口定义，也就是data上必须包含id,和label两个属性，并且属性类型分别是number和string。这个例子可能还不够明显，我们进一步改进一下，以上的函数例子等价于：
 
     
-    [as3]
+    
     interface Data {
         id:number;
         label:string;
@@ -109,7 +105,7 @@ TypeScript中的接口跟AS3中的接口不太一样，代表的含义更加广�
     function handle(data:Data):void{
         //doing something here...
     }
-    [/as3]
+    
     
 
 
@@ -117,10 +113,10 @@ TypeScript中的接口跟AS3中的接口不太一样，代表的含义更加广�
 在AS3中，我们的接口只能定义成员变量和成员方法。而在TypeScript中，接口还可以定义构造函数的参数类型：
 
     
-    [as3]
+    
     var eventClass:{new (type:string): Event;};
     var event = new eventClass(type); //event的类型推理结果为Event。
-    [/as3]
+    
     
 
 
@@ -134,14 +130,14 @@ TypeScript中的接口跟AS3中的接口不太一样，代表的含义更加广�
 TypeScript中同样也支持泛型，泛型让我们能够定义一种动态的类型，结合类型推理使用时将会非常方便。同样的，先来看一个例子：
 
     
-    [as3]
+    
     function create<T>(EventClass:{new (type:string): T;}, type:string):T {
         var event = new EventClass(type);
         return event;
     }
     
     var event = create(TimerEvent,"timer"); //event的类型推理结果为TimerEvent。
-    [/as3]
+    
     
 
 
@@ -154,13 +150,13 @@ TypeScript中同样也支持泛型，泛型让我们能够定义一种动态的�
 在N神的博客里已经提到了enum枚举对象。这里更进一步，介绍一下常量枚举，写法很简单，就是在enum关键字前再加一个const：
 
     
-    [as3]
+    
     const enum Keys {
         scaleX,
         scaleY,    
         rotation   
     }
-    [/as3]
+    
     
 
 
@@ -173,22 +169,22 @@ TypeScript中同样也支持泛型，泛型让我们能够定义一种动态的�
 文本模板的功能也非常实用，对于多行文本，我们直接写在代码里的话，通常要在换行的地方手动改成\n,并且头尾加上"+"符号，操作非常麻烦。而TypeScript里是支持文本模板功能的，可以用一对·符号（波浪线~那个键）将整段文本头尾包含起来，而不需要手动修改换行，看一个例子就明白了：
 
     
-    [as3]
+    
     var name = "contentDisplay";
     var text = "<s:Label id=\""+name+"\" fontFamily=\"Tahoma\" fontSize=\"22\"\n"+
      "textColor=\"0x727070\" left=\"1\" right=\"1\" top=\"36\" bottom=\"45\"\n"+
      "verticalAlign=\"middle\" textAlign=\"center\" text=\"contentDisplay\"/>"
-    [/as3]
+    
     
 
 
 以上代码等价为：
 
     
-    [as3]
+    
     var name = "contentDisplay";
     var text = `<s:Label id="${name}" fontFamily="Tahoma" fontSize="22"
      textColor="0x727070" left="1" right="1" top="36" bottom="45"
      verticalAlign="middle" textAlign="center" text="contentDisplay"/>`
-    [/as3]
+    
     
