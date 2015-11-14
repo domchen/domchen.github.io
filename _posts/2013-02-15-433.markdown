@@ -425,5 +425,3 @@ commitCurrentState()是在currentState属性改变之后触发的，我们就是
 
 
 有任何疑问欢迎留言告诉我。 :)
-
-[返回FlexLite相关文章目录](http://blog.domlib.com/uiframework)

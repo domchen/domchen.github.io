@@ -152,5 +152,3 @@ tags:
 如果你扩展了自定义的UI组件，想要加入自动布局的功能，只需要复写measure()和updateDisplayList()方法即可。其实各种各样的布局功能，也真是通过复写这两个方法来实现的。具体可以参考layouts包下面的布局类：BasicLayout,HorizontalLayout,VercticalLayout,TileLayout。
 
 本想在结尾把所有布局相关的属性都过一遍的，但是写了一半发现写不下去了，这些东西要么API文档里有，要么牵扯到其他的内容。其实不管多么详细的教程，都比不上你自己去翻看源码来的直接快速。我还是把这篇文章当做抛砖引玉的作用吧，已经对整体的架构介绍的差不多了，希望能对你阅读源码会有所帮助，起码下次看到一排的measure()和updateDisplayList()不会无从下手了吧？ :)
-
-[返回FlexLite相关文章目录](http://blog.domlib.com/uiframework)

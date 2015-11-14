@@ -34,4 +34,3 @@ tags:
 
 这篇文章不长，因为SystemManager本身也没有很多内容。鉴于问的人比较多，所以集中写一下。希望对大家有所帮助。: )
 
-[返回FlexLite相关文章目录](http://blog.domlib.com/uiframework)
