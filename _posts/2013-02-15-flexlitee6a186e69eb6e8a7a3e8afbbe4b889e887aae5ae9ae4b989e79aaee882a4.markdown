@@ -1,0 +1,436 @@
+---
+author: dom
+comments: true
+date: 2013-02-15 14:13:37+00:00
+layout: post
+slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e4%b8%89%e8%87%aa%e5%ae%9a%e4%b9%89%e7%9a%ae%e8%82%a4
+title: FlexLite框架解读(三):自定义皮肤
+wordpress_id: 433
+categories:
+- ActionScript
+- FlexLite
+- UI框架
+- 游戏开发
+tags:
+- FlexLite
+- 框架解读
+- 自定义皮肤
+---
+
+在这系列文章的第一篇[《FlexLite框架解读(一):皮肤分离机制》](http://blog.domlib.com/articles/407.html)里，我们详细介绍了下皮肤分离的原理。但是理论归理论，看完之后很多童鞋表示还是不明白怎么用到具体的组件上。那今天这篇就算是皮肤分离的实战吧，让我们一起来看看定制一个组件皮肤的过程。 ：)
+
+关于皮肤分离，上次UIPanelSkin.as的例子,已经说的很清楚了，这里再总结一下：就是把之前耦合的一个组件拆成两个，一个逻辑组件，一个皮肤对象。逻辑组件只关心交互逻辑，所有布局和样式相关的属性都在皮肤对象里设置。组件里可能还含有子项组件。子项都在皮肤对象里实例化，然后和逻辑组件通过声明同名变量的方式，运行时把子项引用赋值给逻辑组件。最后在运行时，逻辑组件把皮肤对象作为自己的唯一子项添加到自身，从而把皮肤显示出来。逻辑组件像操纵木偶一样，通过同名变量操纵皮肤对象里的子项。对以上描述还不清楚的，或者不明白这么做的好处的，请自行阅读[第一篇文章](http://blog.domlib.com/articles/407.html)，重复的地方这里就不再赘述了。
+
+要自定义皮肤，其实是有个捷径的。框架里的每个组件都有默认皮肤，全在org.flexlite.domUI.skins.vector包下。只要照着写或者拷贝出来修改即可。这里我们先来看看如何给组件指定皮肤。<!-- more -->
+
+    
+    [as3]
+    package
+    {
+    	import org.flexlite.domUI.components.TitleWindow;
+    	import org.flexlite.domUI.managers.SystemManager;
+    	import org.flexlite.domUI.skins.vector.TitleWindowSkin;
+    
+    	/**
+    	 * TitleWindow测试
+    	 * @author DOM
+    	 */
+    	public class TitleWindowTest extends SystemManager
+    	{
+    		public function TitleWindowTest()
+    		{
+    			super();
+    			var window:TitleWindow = new TitleWindow();
+    			window.height = 300;
+    			window.width = 400;
+    			window.x = 30;
+    			window.y = 30;
+    			window.title = "测试窗口";
+    			window.skinName = TitleWindowSkin;//指定皮肤
+    			addElement(window);
+    		}
+    	}
+    }
+    [/as3]
+
+
+注意这句：
+
+    
+    window.skinName = TitleWindowSkin;
+
+
+只要给组件的skinName指定一个皮肤类即可。是不是很简单？运行结果如下：
+
+[![TitleWindowTest](http://blog.domlib.com/wp-content/uploads/2013/02/TitleWindow.jpg)](http://blog.domlib.com/wp-content/uploads/2013/02/TitleWindow.jpg)
+
+
+
+看到这里细心的童鞋可能会有疑问，FlexLiteTest(测试例子)那个项目里的组件测试，实例化的时候都没有指定skinName，却也都能显示默认皮肤啊。因为那里每个例子的文档类都继承自AppContainer。而它的构造函数里有这么句：Injector.mapClass(Theme,VectorTheme);意思是配置全局主题为默认的VectorTheme,如果组件没有被显式指定skinName,就会调用你注入的Theme实例，为自己查询获取一个默皮肤。你在项目里也可以定义自己的主题类，为每个组件配置默认皮肤。写起来就可以直接省略赋值皮肤这一步了。并且当你要修改默认皮肤的时候，也只需改这一个地方即可。具体参考VectorTheme的写法。框架里没有默认启用VectorTheme是为了减少不必要的引用，从而减小编译大小。项目开发的时候建议加上那句，开启默认皮肤方便调试，等到发布的时候去掉就行了。
+
+下面我们一起来解读下TitleWindow的默认皮肤，然后大家举一反三就能定制所有组件的皮肤了。
+
+因为TitleWindowSkin继承自PanelSkin，而它主要的样式代码也都来自PanelSkin。限于篇幅，这里就不再贴出TitleWindowSkin.as的代码了。我们直接看PanelSkin.as
+
+    
+    [as3]
+    package org.flexlite.domUI.skins.vector
+    {
+    	import flash.display.Graphics;
+    	import flash.text.TextFormatAlign;
+    
+    	import org.flexlite.domCore.dx_internal;
+    	import org.flexlite.domUI.components.Group;
+    	import org.flexlite.domUI.components.Label;
+    	import org.flexlite.domUI.components.RectangularDropShadow;
+    	import org.flexlite.domUI.layouts.VerticalAlign;
+    	import org.flexlite.domUI.skins.VectorSkin;
+    
+    	use namespace dx_internal;
+    	/**
+    	 * Panel默认皮肤
+    	 * @author DOM
+    	 */
+    	public class PanelSkin extends VectorSkin
+    	{
+    		public function PanelSkin()
+    		{
+    			super();
+    			this.states = ["normal","disabled"];
+    		}
+    
+    		public var titleDisplay:Label;
+    
+    		public var contentGroup:Group;
+    
+    		/**
+    		 * @inheritDoc
+    		 */
+    		override protected function createChildren():void
+    		{
+    			super.createChildren();
+    
+    			//实例化实体容器
+    			contentGroup = new Group();
+    			contentGroup.top = 30;
+    			contentGroup.left = 1;
+    			contentGroup.right = 1;
+    			contentGroup.bottom = 1;
+    			addElement(contentGroup);
+    			//实例化标题文本
+    			titleDisplay = new Label();
+    			titleDisplay.maxDisplayedLines = 1;
+    			titleDisplay.left = 5;
+    			titleDisplay.right = 5;
+    			titleDisplay.top = 1;
+    			titleDisplay.minHeight = 28;
+    			titleDisplay.verticalAlign = VerticalAlign.MIDDLE;
+    			titleDisplay.textAlign = TextFormatAlign.CENTER;
+    			addElement(titleDisplay);
+    		}
+    
+    		/**
+    		 * @inheritDoc
+    		 */
+    		override protected function updateDisplayList(w:Number,h:Number):void
+    		{
+    			super.updateDisplayList(w, h);
+    
+    			graphics.clear();
+    			var g:Graphics = graphics;
+    			g.lineStyle(1,borderColors[0]);
+    			g.beginFill(0xFFFFFF);
+    			g.drawRoundRect(0,0,w,h,cornerRadius+2,cornerRadius+2);
+    			g.endFill();
+    			g.lineStyle();
+    			drawRoundRect(
+    				1, 1, w-1, 28,{tl:cornerRadius-1,tr:cornerRadius-1,bl:0,br:0},
+    				[0xf6f8f8,0xe9eeee], 1,
+    				verticalGradientMatrix(1, 1, w - 1, 28)); 
+    			drawLine(1,29,w,29,0xdddddd);
+    			drawLine(1,30,w,30,0xeeeeee);
+    			this.alpha = currentState=="disabled"?0.5:1;
+    		}
+    	}
+    }
+    [/as3]
+
+
+可以看到就两个方法，createChildren()负责实例化子项。这个跟第一篇里的例子差不多，就不多说了。关键是updateDisplayList()方法(如果你读了[第二篇文章](http://blog.domlib.com/articles/417.html)，就会对这个方法非常熟悉)，负责绘制外观。我们关键是要替换这部分代码，才能自定义外观。出于精简素材的考虑，默认皮肤全部使用矢量代码绘制，这样才会非常小巧。而实际项目中，我们通常是使用外部素材，位图或者SWF导出的矢量图等。那要怎么把外部的自定义素材添加到皮肤里呢？
+
+大部分人第一反应应该都是直接addChild()一个显示对象吧？对不起，你会得到一个运行时错误。框架里不允许使用addChild()，要用addElement()代替。为什么要引入addElement()呢？这里简单扯一下原因：Flash API里没有提供一个既有鼠标事件又不是容器的显示对象基类。所以框架里所有组件都继承自Sprite。也就是说所有组件不管是不是容器，都含有addChild()方法。这样对组件体系会造成混乱，你可以随意给非容器添加子项，结果就是添加的子项都无法自动布局，调试起来也会更加困难。而要从代码层面避免这种错误使用，就需要引入一套新的容器接口。只有是容器的组件才具有它们。另外一个原因是，addElement()虽然底层还是调用的addChild(),但是它的参数不是显示对象，而是接口，更具有扩展性。这样你就可以把非显示对象的也当做子项添加到显示列表。Flex里主要是为了兼容绘图元素，这里主要是为了将来精简显示列表嵌套层级做准备(皮肤可以是非显示对象，这样就不存在多一层嵌套了)。扯了这么多,最后记住一句话：**在框架范围内，只要你使用了addChild()等方法，不要想了，肯定是写错了！**
+
+回到前面的问题，那不能用addChild(),我又想添加普通显示对象到框架容器里，该咋办？这里就要请出我们的桥接类UIAsset了。它是一个实现了IVisualElement接口的包装器，能让普通显示对象也具有自动布局的功能。下面我们来看下它的用法。
+
+    
+    [as3]
+    var asset:UIAsset = new UIAsset();
+    asset.skinName = "assets/panelBG.png";
+    addElement(asset);
+    [/as3]
+
+
+是不是很简单？只要给UIAsset.skinName赋值外部图片路径，就可以把它当做那个图片来用。而且屏蔽了异步加载的过程。那要是是已经加载好的BitmapData呢？直接改成：asset.skinName = bitmapData;结果一样。从swf里获取的导出类定义呢？asset.skinName = YourMovieClipClass;任何显示对象？asset.skinName = yourDisplayObject; 此处省略无数字......一个用法走遍天下,很爽吧？
+
+大家应该开始好奇这个skinName属性了吧，它怎么什么都能显示出来？答案在它背后的解析器。框架里提供了一个默认的skinName解析器：DefaultSkinAdapter.as
+[as3]
+
+    
+    package org.flexlite.domUI.components.supportClasses
+    {
+    	import flash.display.Bitmap;
+    	import flash.display.BitmapData;
+    	import flash.display.DisplayObject;
+    	import flash.display.Loader;
+    	import flash.events.Event;
+    	import flash.events.IOErrorEvent;
+    	import flash.net.URLRequest;
+    	import flash.utils.ByteArray;
+    
+    	import org.flexlite.domUI.core.ISkinAdapter;
+    
+    	/**
+    	 * 默认的ISkinAdapter接口实现
+    	 * @author DOM
+    	 */
+    	public class DefaultSkinAdapter implements ISkinAdapter
+    	{
+    		/**
+    		 * 构造函数
+    		 */		
+    		public function DefaultSkinAdapter()
+    		{
+    		}
+    		/**
+    		 * 获取皮肤显示对象
+    		 * @param skinName 待解析的新皮肤标识符
+    		 * @param compFunc 解析完成回调函数，示例：compFunc(skin:Object,skinName:Object):void;
+    		 * 回调参数skin若为显示对象，将直接被添加到显示列表,其他对象根据项目自定义组件的具体规则解析。
+    		 * @param oldSkin 旧的皮肤显示对象,传入值有可能为null。对于某些类型素材，例如Bitmap，可以重用传入的显示对象,只修改其数据再返回。
+    		 */
+    		public function getSkin(skinName:Object,compFunc:Function,oldSkin:DisplayObject=null):void
+    		{
+    			if(skinName is Class)
+    			{
+    				compFunc(new skinName(),skinName);
+    			}
+    			else if(skinName is String||skinName is ByteArray)
+    			{
+    				var loader:Loader = new Loader;
+    				loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR,function(event:Event):void{
+    					compFunc(skinName,skinName);
+    				});
+    				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,function(event:Event):void{
+    					if(loader.content is Bitmap)
+    					{
+    						var bitmapData:BitmapData = (loader.content as Bitmap).bitmapData;
+    						compFunc(new Bitmap(bitmapData,"auto",true),skinName);
+    					}
+    					else
+    					{
+    						compFunc(loader.content,skinName);
+    					}
+    				});
+    				if(skinName is String)
+    					loader.load(new URLRequest(skinName as String));
+    				else
+    					loader.loadBytes(skinName as ByteArray);
+    			}
+    			else if(skinName is BitmapData)
+    			{
+    				var skin:Bitmap;
+    				if(oldSkin is Bitmap)
+    				{
+    					skin = oldSkin as Bitmap;
+    					skin.bitmapData = skinName as BitmapData;
+    				}
+    				else
+    				{
+    					skin = new Bitmap(skinName as BitmapData,"auto",true);
+    				}
+    				compFunc(skin,skinName);
+    			}
+    			else
+    			{
+    				compFunc(skinName,skinName);
+    			}
+    		}
+    	}
+    }
+    [/as3]
+
+
+相信代码里的注释已经说明了一切。顺便说下，这个解析器实现的是ISkinAdapter。留下个接口干嘛？当然是为了扩展啊。这个解析过程是你可以自定义的！你可以在项目里实现这个接口，桥接到你的素材管理器。就可以使用关键字字符串的方式来加载素材了。完全屏蔽异步加载和解码过程！启用你的自定义解析器还是用Injector类：Injector.mapClass(ISkinAdapter,YourSkinAdapter);(框架里类似这样，预留了很多可扩展的接口，都是统一通过Injector在项目初始化时注入进去)。另外，UIAsset也是所有可定制皮肤组件(SkinnableComponent)的基类。所以你的自定义规则对所有可定制皮肤组件都有效，这还可以扩展出很多用法。抛砖引玉做完了，自己发散思维去吧。
+
+解决了素材添加显示的问题，再应该没什么困难的地方了吧？上面的那个面板背景素材，大多是需要自适应的。直接加上asset.percentHeight=100,asset.percentWidth=100;它就能填满窗口了。因为UIAsset是可以自动布局的组件，所以你在createChildren()方法里添加它一次即可。默认皮肤里要写updateDisplayList()方法是因为绘图函数需要每次重绘。所以现在你也不需要复写这个方法了。最后的结果应该类似这样：
+
+    
+    [as3]
+    package org.flexlite.domUI.skins.vector
+    {
+    	import flash.text.TextFormatAlign;
+    
+    	import org.flexlite.domCore.dx_internal;
+    	import org.flexlite.domUI.components.Group;
+    	import org.flexlite.domUI.components.Label;
+    	import org.flexlite.domUI.components.UIAsset;
+    	import org.flexlite.domUI.layouts.VerticalAlign;
+    	import org.flexlite.domUI.components.supportClasses.Skin;
+    
+    	use namespace dx_internal;
+    	/**
+    	 * Panel皮肤
+    	 * @author DOM
+    	 */
+    	public class PanelSkin extends Skin
+    	{
+    		public function PanelSkin()
+    		{
+    			super();
+    			this.states = ["normal","disabled"];
+    		}
+    
+    		public var titleDisplay:Label;
+    
+    		public var contentGroup:Group;
+    
+    		/**
+    		 * @inheritDoc
+    		 */
+    		override protected function createChildren():void
+    		{
+    			super.createChildren();
+    			//添加背景
+    			var asset:UIAsset = new UIAsset();
+    			asset.skinName = "assets/panelBG.png";
+    			asset.percentHeight = 100;
+    			asset.percentWidth = 100;
+    			addElement(asset);
+    			//实例化实体容器
+    			contentGroup = new Group();
+    			contentGroup.top = 30;
+    			contentGroup.left = 1;
+    			contentGroup.right = 1;
+    			contentGroup.bottom = 1;
+    			addElement(contentGroup);
+    			//实例化标题文本
+    			titleDisplay = new Label();
+    			titleDisplay.maxDisplayedLines = 1;
+    			titleDisplay.left = 5;
+    			titleDisplay.right = 5;
+    			titleDisplay.top = 1;
+    			titleDisplay.minHeight = 28;
+    			titleDisplay.verticalAlign = VerticalAlign.MIDDLE;
+    			titleDisplay.textAlign = TextFormatAlign.CENTER;
+    			addElement(titleDisplay);
+    		}
+    	}
+    }
+    [/as3]
+
+
+最后还有必要说下的是皮肤的状态更新。上面举的例子都是静态的面板皮肤，要是动态的，如ButtonSkin，该如何写？
+
+简单说下原理，实现了IStateClient的皮肤(比如Skin基类)，是含有currentState属性的。当逻辑组件的状态发生改变的时候，就会主动给皮肤的这个属性赋值对应的字符串。比如Button有"up","over","down"等状态。当Skin的currentState值发生改变后，会触发commitCurrentState()方法，子类皮肤复写这个方法，隐藏或显示对应状态的素材即可。而逻辑组件具体含有什么状态名，可以参考对应逻辑组件(比如ButtonBase)的getCurrentSkinState()方法。 有点写不动了，这部分内容也不复杂，大家就自己去看代码吧。
+
+**[更新]**
+
+看完这篇文章后，发现有很多童鞋来问我：为什么不直接在Skin基类的commitCurrentState()方法里调用invalidateDisplayList()？估计是因为看到了默认皮肤的基类VectorSkin里就是这么干的。或者还有人照着默认皮肤的写法，也直接就在updateDisplayList()方法里切换状态了。可能是我之前没写清楚，并且默认皮肤的特殊性，让大家造成了困惑。这里再统一说明下：
+
+首先解释那两个需要复写的方法。
+
+commitCurrentState()是在currentState属性改变之后触发的，我们就是要在这个状态名发生改变的时候，相应地切换要显式或隐藏的素材对象。那为什么不直接复写currentState的setter方法呢？因为组件是延迟实例化的。在没添加到显示列表前，都不会开始实例化子项(也就是你的素材)，这时候就有访问空对象的危险。所以提供了个commitCurrentState()方法，确保它首次被执行的时候，已经完成子项的实例化。如果你没有延迟实例化的子项(在createChildren()方法里创建的)，那复写currentState也是没问题的。保险起见，还是推荐复写commitCurrentState()方法。总结下它的作用就是：在状态改变时，设置对应状态应该显示或隐藏哪些素材，或者其他属性的变化(比如alpha)。如果想进一步优化，部分素材可以在第一次切换到该状态时再进行实例化。所以你想要切换状态，就必须在皮肤中复写它。插播一句：如果你想自定义组件的状态名列表，就复写对应逻辑组件的getCurrentSkinState()方法,具体参考ButtonBase。
+
+而updateDisplayList()的作用，我们在[第二篇文章](http://blog.domlib.com/articles/417.html)里已经介绍过了：布局子项。即根据子项的各种属性(left，right，percentWidth等等)来设置它的x，y，width，height，以达到自动布局的显示效果。而这个方法的触发，在框架的组件内部是已经都封装好的，你添加或移除了子项时它会自动触发，你的子项尺寸发生改变时候它会自动触发，你设置了任何会影响布局的属性时它也会自动触发。所以你不用考虑它的触发问题。那你需要复写它吗？只要你使用的是框架内的组件，都已经帮你封装好了自动布局，所以通常也不用。那VectorSkin里为什么要复写它呢？因为VectorSkin是调用的矢量绘制。并不是把位图素材子类的作为子项添加。每次皮肤尺寸改变的时候，只有重新绘制才能显示正确。所以要复写这个方法。同样是这个原因，切换状态的时候，也需要重新绘制。所以干脆直接在commitCurrentState()方法里调用invalidateDisplayList()，从而让切换状态也直接调用updateDisplayList()代码。但是updateDisplayList()本质上是只负责布局子项的。因为默认皮肤要尽可能少的代码量，所以用了矢量绘制，所以这里把布局子项和切换状态代码写到一起，纯属巧合！默认皮肤的参考价值仅在子组件的组合和定义上。请不要再继续纠缠于updateDisplayList()。
+
+因此，如果你是使用了外部加载的素材，无论位图素材还是矢量素材。用万能的UIAsset包装一下(UIAsset.skinName=你的素材对象),然后在皮肤里addElement()这个UIAsset即可。想让它自动铺满皮肤？设置下它的percentHeight和percentWidth都为100即可。布局类会帮你做自动布局的工作，不需要你去复写updateDisplayList()。下面补充最终完整的例子，加上状态切换的代码。
+
+    
+    [as3]
+    package org.flexlite.domUI.skins.vector
+    {
+    	import flash.text.TextFormatAlign;
+    
+    	import org.flexlite.domCore.dx_internal;
+    	import org.flexlite.domUI.components.Group;
+    	import org.flexlite.domUI.components.Label;
+    	import org.flexlite.domUI.components.UIAsset;
+    	import org.flexlite.domUI.components.supportClasses.Skin;
+    	import org.flexlite.domUI.layouts.VerticalAlign;
+    
+    	use namespace dx_internal;
+    	/**
+    	 * Panel皮肤
+    	 * @author DOM
+    	 */
+    	public class PanelSkin extends Skin
+    	{
+    		public function PanelSkin()
+    		{
+    			super();
+    			this.states = ["normal","disabled"];
+    		}
+    		/**
+    		 * [SkinPart]标题文本显示对象
+    		 */		
+    		public var titleDisplay:Label;
+    		/**
+    		 * [SkinPart]实体容器区域
+    		 */
+    		public var contentGroup:Group;
+    		/**
+    		 * 面板背景素材
+    		 */		
+    		private var backgroud:UIAsset;
+    
+    		/**
+    		 * @inheritDoc
+    		 */
+    		override protected function createChildren():void
+    		{
+    			super.createChildren();
+    			//添加背景
+    			backgroud = new UIAsset();
+    			backgroud.skinName = "assets/panelBG.png";
+    			backgroud.percentHeight = 100;
+    			backgroud.percentWidth = 100;
+    			addElement(backgroud);
+    			//实例化实体容器
+    			contentGroup = new Group();
+    			contentGroup.top = 30;
+    			contentGroup.left = 1;
+    			contentGroup.right = 1;
+    			contentGroup.bottom = 1;
+    			addElement(contentGroup);
+    			//实例化标题文本
+    			titleDisplay = new Label();
+    			titleDisplay.maxDisplayedLines = 1;
+    			titleDisplay.left = 5;
+    			titleDisplay.right = 5;
+    			titleDisplay.top = 1;
+    			titleDisplay.minHeight = 28;
+    			titleDisplay.verticalAlign = VerticalAlign.MIDDLE;
+    			titleDisplay.textAlign = TextFormatAlign.CENTER;
+    			addElement(titleDisplay);
+    		}
+    
+    		override protected function commitCurrentState():void
+    		{
+    			switch(currentState)
+    			{
+    				case "normal":
+    					backgroud.alpha = 1;
+    					break;
+    				case "disabled"://当面板是禁用状态时(enabled=false),让背景半透明。
+    					backgroud.alpha = 0.6;
+    					break;
+    			}
+    		}
+    	}
+    }
+    [/as3]
+
+
+有任何疑问欢迎留言告诉我。 :)
+
+[返回FlexLite相关文章目录](http://blog.domlib.com/uiframework)

@@ -1,0 +1,15 @@
+---
+author: dom
+comments: true
+date: 2014-08-31 08:34:13+00:00
+layout: post
+slug: mac%e4%b8%8b%e5%af%bc%e5%87%ba%e7%9a%84%e7%bb%91%e5%ae%9a%e8%bf%90%e8%a1%8c%e6%97%b6air%e7%a8%8b%e5%ba%8f%e9%97%aa%e9%80%80%e7%9a%84%e9%97%ae%e9%a2%98
+title: Mac下导出的绑定运行时AIR程序闪退的问题
+wordpress_id: 727
+categories:
+- 个人日志
+---
+
+这几天在测试AIR的运行时绑定功能，目标要导出桌面系统的AIR程序包。Windows是直接生成一个文件夹，双击里面的xxx.exe运行正常。而Mac下生成的是xxx.app的文件夹，但是在mac里直接显示成一个文件，双击启动总是闪退。经过不断的测试。发现跟磁盘分区格式可能有关系。
+
+我的Mac是安装了双系统，所以有三个分区。两个系统，一个数据共享盘(NTFS格式)。Flash Builder工程都放在数据共享盘里。导出xxx.app时，自然也是生成到了数据盘。后来把同一个Flash Builder项目，拷贝到Mac分区。再导出xxx.app时，双击就能正常启动了。索性继续测试。把生成的xxx.app拷贝到Mac分区的各个文件夹测试，都能正常运行。但是一拷贝到数据盘，发现又闪退了。猜测结论是xxx.app这种程序，只能在Mac分区格式上运行。网上搜索了好久没找到相关资料。记录下这个发现，希望对遇到同样的问题的朋友有帮助。

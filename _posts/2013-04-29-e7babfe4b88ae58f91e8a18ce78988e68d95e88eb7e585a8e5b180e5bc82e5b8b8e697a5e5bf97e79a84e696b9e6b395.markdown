@@ -1,0 +1,125 @@
+---
+author: dom
+comments: true
+date: 2013-04-29 04:48:47+00:00
+layout: post
+slug: '%e7%ba%bf%e4%b8%8a%e5%8f%91%e8%a1%8c%e7%89%88%e6%8d%95%e8%8e%b7%e5%85%a8%e5%b1%80%e5%bc%82%e5%b8%b8%e6%97%a5%e5%bf%97%e7%9a%84%e6%96%b9%e6%b3%95'
+title: 线上发行版捕获全局异常日志的方法
+wordpress_id: 475
+categories:
+- ActionScript
+- Flash
+- 游戏开发
+tags:
+- 全局异常
+- 堆栈信息
+---
+
+最近游戏快上线了。老板提了个需求。希望我们能把客户端的报错都记录下来，并存到服务器日志里。有很多线上的bug，在本地很难重现，如果能记录下来报错地方的调用堆栈。对调试就会很有帮助。也可以更加准确地分析出用户的留存率是否跟某个bug有关系，从而及时修复。
+
+查了下API，loaderInfo有个uncaughtErrorEvents的属性，可以在上面监听到全局未处理（没有在try...catch里）的异常。这个接口是FP10.1开始提供的。现在FP一般都是11以上了。所以应该没问题。写了下代码，测试成功。可是遇到个问题，没法获取异常触发地点的调用堆栈。因为Error.getStackTrace()方法(FP9已经提供)被限制在Debug版本中使用。后来经高人指点，FP11.5以上版本又开放了这个接口，可以在非Debug版FP中调用了。据最新的统计数据显示，FP11的覆盖率应该已经达到80%以上，而且FP11以后都有静默升级。也就是说大部分用户都是在11.5以上版本的。写这个功能也只是做辅助的调试日志用，有这个覆盖率应该足够了。不过，要开启这个接口，必须在编译时加上编译参数-swf-version=18，否则，即使客户端FP版本够高也不会为你的SWF文件开启这个接口。经过反复测试。增加-swf-version=18并不会导致SWF不能在低版本的FP上运行。所以是兼容的。<!-- more -->
+
+以下是测试代码：
+
+ErrorTest.as
+
+    
+    [as3]
+    package
+    {
+    	import flash.display.Sprite;
+    	import flash.events.ErrorEvent;
+    	import flash.events.UncaughtErrorEvent;
+    	import flash.text.TextField;
+    	import flash.utils.setTimeout;
+    
+    	import org.domlib.test.ErrorDispatcher;
+    
+    	/**
+    	 * 全局异常捕获测试
+    	 * @author DOM
+    	 */
+    	public class ErrorTest extends Sprite
+    	{
+    		public function ErrorTest()
+    		{
+    			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR,unCaughtErrorHandler);
+    			logText.width = logText.height = 1000;
+    			addChild(logText);
+    			setTimeout(runTest,20);
+    		}
+    
+    		private var logText:TextField = new TextField();
+    
+    		private function runTest():void
+    		{
+    			try
+    			{
+    				new ErrorDispatcher("在try...catch里的错误");//在try...catch里的错误不会触发事件。
+    			}
+    			catch(e:Error){}
+    
+    			new ErrorDispatcher("不在try...catch里的错误");//这个错误会触发。
+    		}
+    
+    		private function unCaughtErrorHandler(event:UncaughtErrorEvent):void
+    		{
+    			var message:String = "";
+    			if(event.error is Error)
+    			{
+    				//只有FP11.5以上才能在非debug版本中调用getStackTrace()。
+    				message = event.error.getStackTrace();
+    				if(!message)
+    					message = event.error.message;
+    
+    			}
+    			else if(event.error is ErrorEvent)
+    			{
+    				message = ErrorEvent(event.error).text;
+    			}
+    			else
+    			{
+    				message = event.error.toString();
+    			}
+    			logText.appendText(message);
+    		}
+    	}
+    }
+    [/as3]
+
+
+ErrorDispatcher.as
+
+    
+    [as3]
+    package org.domlib.test
+    {
+    
+    	/**
+    	 * 错误抛出者
+    	 * @author DOM
+    	 */
+    	public class ErrorDispatcher
+    	{
+    		public function ErrorDispatcher(message:String)
+    		{
+    			throw new Error(message);
+    		}
+    	}
+    }
+    [/as3]
+
+
+运行结果：
+[![ErrorTest](http://blog.domlib.com/wp-content/uploads/2013/04/ErrorTest.png)](http://blog.domlib.com/wp-content/uploads/2013/04/ErrorTest.png)
+
+[![ErrorTest2](http://blog.domlib.com/wp-content/uploads/2013/04/ErrorTest2.png)](http://blog.domlib.com/wp-content/uploads/2013/04/ErrorTest2.png)
+
+
+
+这里要注意下，测试的时候要导出发行版，然后用非Debug版本的FP去运行，Debug版本的FP设不设置swf-version=18，都能成功获得堆栈信息。
+
+附上完整的测试项目：[ErrorTest](http://blog.domlib.com/wp-content/uploads/2013/04/ErrorTest1.zip)
+
+**[更新]**
+之前困扰好长时间的堆栈信息输出不完整的问题，终于得到解决了，[参考这里](http://stackoverflow.com/questions/16073357/actionscript-compiler-uncaughterrorevent/16140666#16140666)。 其实只要把Error(event.error)这句的类型转换去掉就行了。前文代码和附件内容都已更新。

@@ -1,0 +1,384 @@
+---
+author: dom
+comments: true
+date: 2012-03-10 13:40:34+00:00
+layout: post
+slug: '%e9%95%82%e7%a9%ba%e9%81%ae%e7%bd%a9'
+title: 镂空遮罩
+wordpress_id: 186
+categories:
+- ActionScript
+- Flash
+- 游戏开发
+tags:
+- 新手引导
+- 混合模式
+- 遮罩
+- 镂空
+---
+
+**      **这几天写游戏的新手引导模块，需要做一个镂空遮罩，就是盖着整个场景，只让用户点击镂空的一个圆形区域。这个事看起来很简单。。。其实就是很简单啊！可是因为我把问题想得太复杂了，浪费了好多时间，特此文章一篇。也希望遇到同样问题的人，不再跳进这个坑。
+
+**      **先是上网搜索了，发现都是用混合模式的方法：1.先创建一个Sprite画一个矩形盖着整个场景，blendMode设置为Layer，2.再创建一个Sprite画一个小圆，blendMode设置为Erase。3.将小圆添加到矩形里。 OK，镂空图案出来了。中间一个圆确实是透明的，可是测试的时候发现，这个方法根本是个坑。因为即使中间的圆形区域看起来是透明的，却还是可以点击的！根本没有穿透。整个场景被盖得严严实实的。
+
+**      **然后又继续上网搜索，看了几篇坑更深的博文，“详细分析”了镂空遮罩这个东西在Flash Player似乎是不可实现的，并且不记得在哪看见了“模拟鼠标事件”的字眼。好吧，既然这样。<!-- more -->那我就模拟鼠标点击事件吧。继续用混合模式的方法，制作一个全部盖着的遮罩。然后监听，中间那个圆形的鼠标事件获取点击位置,再然后克隆下这个事件想办法从遮罩后面的某个显示对象上抛出去。那要怎么确定从哪个对象上抛事件呢？我查了下API，发现DisplayObject有个不太常用的函数：getObjectsUnderPoint()。测试了下，发现它能拿到指定坐标下的所有显示对象列表，并且从外向内，从低层到顶层地排序。也就列表是最后一个元素是该坐标下最顶部的最小的一个显示对象。
+
+**      **嗯，感觉有点靠谱了。我就直接用最后一个显示对象抛出克隆的鼠标事件。放到工程里测试了下，发现果然可以。但是，只是部分可以，有的地方怎么点都没反应。我又断点调试看了下。原来那个方法返回的只是显示对象列表，但并不是所有显示对象都能冒泡鼠标事件的。能冒泡鼠标事件的对象必须是InteractiveObject的子类。而InteractiveObject是DisplayObject的子类。问题就出在这。DisplayObject的子类里有个Shape，它不是Interactive的子类。所以在它上面抛出鼠标事件，一点反应都没有。好吧，那我再判断下，如果它不是InteractiveObject，就用它的父级抛出鼠标事件。
+
+**      **嗯，感觉又靠谱了。测试了下，怎么还是不行啊？再断点调试，发现列表最顶端的元素，它的父级的父级的父级，mouseChildren和mouseEnabled都是false，也就是说，这个元素，它本应该是被穿过的，它下一层的元素才有可能是可以抛出鼠标事件的对象。这下纠结了啊，下一个元素有可能是它的父级，有可能是它同级的，也有可能是同级的子项。并且不是它自身的mouseEnabled为true就算了。每一层的父级，若有一个mouseChildren为false，则子项的mouseEnabled全都相当于false。即使自身的mouseEnabled为false，它也有可能作为父级的点击区域而存在。。。这坑已经越来越深了。我纠结了一下午，都在理这其中的判定顺序。就在我即将突破的时候。同事来凑热闹了，了解了情况后说:果然纠结啊，我也想试试。然后他就回去用Flash pro画了一个mc出来，杯具就这样发生了。。。
+
+**      **他回去只写了几行测试代码。叫我过去看，结果居然就搞定了。原来用绘图函数，直接drawRect()，再drawEllipse(),第一个Rect就会被第二个Ellipse抠出个镂空区域来，画出来的镂空区域就是可以穿过点击的。没错，就是这么简单。。。下面上代码：
+
+
+
+    
+    [as3]
+    package
+    {
+    	import flash.display.Sprite;
+    	import flash.events.MouseEvent;
+    
+    	/**
+    	 * 镂空遮罩测试
+    	 * @author DOM
+    	 */
+    	public class HollowTest extends Sprite
+    	{
+    		public function HollowTest()
+    		{
+    			super();
+    
+    			var bg:Sprite = new Sprite;
+    			bg.graphics.beginFill(0x009aff);
+    			bg.graphics.drawRect(0,0,500,400);
+    			bg.graphics.endFill();
+    			bg.addEventListener(MouseEvent.CLICK,onBgClick);
+    			addChild(bg);
+    
+    			var hollowMask:Sprite = new Sprite;
+    			hollowMask.graphics.beginFill(0x009900);
+    			hollowMask.graphics.drawRect(150,100,200,200);
+    			hollowMask.graphics.drawEllipse(200,150,100,100);
+    			hollowMask.graphics.endFill();
+    			hollowMask.addEventListener(MouseEvent.CLICK,onMaskClick);
+    			addChild(hollowMask);
+    		}
+    
+    		private function onMaskClick(event:MouseEvent):void
+    		{
+    			trace("maskClick!");
+    		}
+    
+    		private function onBgClick(event:MouseEvent):void
+    		{
+    			trace("bgClick!");
+    		}
+    	}
+    }
+    [/as3]
+
+
+
+
+**    **后来整理了下，封装了个镂空遮罩组件出来，可以直接设置它的宽高和镂空位置，它会自动重绘。还是上代码吧：
+
+    
+    [as3]
+    package module.newGuide.view
+    {
+    	import flash.display.Sprite;
+    	import flash.events.Event;
+    
+    	/**
+    	 * 镂空遮罩工具类
+    	 * @author DOM
+    	 */	
+    	public class HollowMask extends Sprite
+    	{
+    		/**
+    		 * 构造函数
+    		 * @param width 镂空圆形的宽度
+    		 * @param height 镂空圆形的高度
+    		 */		
+    		public function HollowMask(hollowWidth:Number=100,hollowHeight:Number=100)
+    		{
+    			super();
+    			this._hollowWidth = hollowWidth;
+    			this._hollowHeight = hollowHeight;
+    			this.redrawRequest = true;
+    		}
+    
+    		private var _maskColor:uint = 0x000000;
+    
+    		/**
+    		 * 遮罩的颜色
+    		 */		
+    		public function get maskColor():uint
+    		{
+    			return _maskColor;
+    		}
+    
+    		public function set maskColor(value:uint):void
+    		{
+    			if(_maskColor==value)
+    				return;
+    			_maskColor = value;
+    			redrawRequest = true;
+    		}
+    
+    		private var _maskAlpha:Number = 0.5;
+    		/**
+    		 * 遮罩的透明度
+    		 */
+    		public function get maskAlpha():Number
+    		{
+    			return _maskAlpha;
+    		}
+    
+    		public function set maskAlpha(value:Number):void
+    		{
+    			if(_maskAlpha==value)
+    				return;
+    			_maskAlpha = value;
+    			redrawRequest = true;
+    		}
+    
+    		/**
+    		 * 移动镂空区域到指定的坐标
+    		 * @param x 目标点x坐标
+    		 * @param y 目标点y坐标
+    		 * @param speed 移动速度，单位为像素,若小于等于0，则不执行缓动。
+    		 */		
+    		public function moveHollowTo(x:Number,y:Number,speed:Number = 0):void
+    		{
+    			moveSpeed = speed;
+    			if(speed<=0)
+    			{
+    				removeMoveEventListener();
+    				_hollowX = x;
+    				_hollowY = y;
+    				drawBackground();
+    			}
+    			else
+    			{
+    				targetX = x;
+    				targetY = y;
+    				addMoveEventListener();
+    			}
+    		}
+    		/**
+    		 * 缓动事件监听已添加标志 
+    		 */		
+    		private var moveEventAttached:Boolean = false;
+    		/**
+    		 * 添加缓动事件监听
+    		 */		
+    		private function addMoveEventListener():void
+    		{
+    			if(moveEventAttached)
+    				return;
+    			moveEventAttached = true;
+    			this.addEventListener(Event.ENTER_FRAME,onMoveHollow);
+    		}
+    		/**
+    		 * 移除缓动事件监听
+    		 */		
+    		private function removeMoveEventListener():void
+    		{
+    			if(!moveEventAttached)
+    				return;
+    			moveEventAttached = false;
+    			removeEventListener(Event.ENTER_FRAME,onMoveHollow);
+    		}
+    		/**
+    		 * 移动速度,像素 
+    		 */		
+    		private var moveSpeed:Number = 0;
+    		/**
+    		 * 目标点x坐标 
+    		 */		
+    		private var targetX:Number = 0;
+    		/**
+    		 * 目标点y坐标 
+    		 */		
+    		private var targetY:Number = 0;
+    		/**
+    		 * 缓动处理函数
+    		 */		
+    		private function onMoveHollow(event:Event):void
+    		{
+    			var offsetX:Number = targetX - _hollowX;
+    			var offsetY:Number = targetY - _hollowY;
+    			var distance:Number = Math.sqrt(offsetX*offsetX+offsetY*offsetY);
+    			if(distance==0||distance<=moveSpeed)
+    			{
+    				_hollowX = targetX;
+    				_hollowY = targetY;
+    				removeMoveEventListener();
+    			}
+    			else
+    			{
+    				_hollowX += offsetX*moveSpeed/distance;
+    				_hollowY += offsetY*moveSpeed/distance;
+    			}
+    			drawBackground();
+    		}
+    
+    		private var _hollowX:Number = 0;
+    		/**
+    		 * 镂空区域的x坐标位置
+    		 */		
+    		public function get hollowX():Number
+    		{
+    			return _hollowX;
+    		}
+    
+    		public function set hollowX(value:Number):void
+    		{
+    			if(_hollowX == value)
+    				return;
+    			_hollowX  = value;
+    			redrawRequest = true;
+    		}
+    
+    		private var _hollowY:Number = 0;
+    		/**
+    		 * 镂空区域的y坐标位置
+    		 */	
+    		public function get hollowY():Number
+    		{
+    			return _hollowY;
+    		}
+    
+    		public function set hollowY(value:Number):void
+    		{
+    			if(_hollowY == value)
+    				return;
+    			_hollowY = value;
+    			redrawRequest = true;
+    		}
+    
+    		private var _hollowWidth:Number = 100;
+    		/**
+    		 * 镂空圆形区域宽度
+    		 */
+    		public function get hollowWidth():Number
+    		{
+    			return _hollowWidth;
+    		}
+    
+    		public function set hollowWidth(value:Number):void
+    		{
+    			if(_hollowWidth==value)
+    				return;
+    			_hollowWidth = value;
+    			redrawRequest = true;
+    		}
+    
+    		private var _hollowHeight:Number = 100;
+    		/**
+    		 * 镂空圆形区域高度
+    		 */
+    		public function get hollowHeight():Number
+    		{
+    			return _hollowHeight;
+    		}
+    
+    		public function set hollowHeight(value:Number):void
+    		{
+    			if(_hollowHeight==value)
+    				return;
+    			_hollowHeight = value;
+    			redrawRequest = true;
+    		}
+    
+    		private var _width:Number = 100;
+    
+    		override public function get width():Number
+    		{
+    			return _width;
+    		}
+    
+    		override public function set width(value:Number):void
+    		{
+    			if(_width==value)
+    				return;
+    			_width = value;
+    			redrawRequest = true;
+    		}
+    
+    		private var _height:Number = 100;
+    
+    		override public function get height():Number
+    		{
+    			return _height;
+    		}
+    
+    		override public function set height(value:Number):void
+    		{
+    			if(_height == value)
+    				return;
+    			_height = value;
+    			redrawRequest = true;
+    		}
+    
+    		private var _redrawRequest:Boolean = false;
+    
+    		/**
+    		 * 需要重绘背景的标志
+    		 */
+    		private function set redrawRequest(value:Boolean):void
+    		{
+    			if(_redrawRequest==value)
+    				return;
+    			_redrawRequest = value;
+    			addEventListener(Event.ENTER_FRAME,onEnterFrame);
+    		}
+    		/**
+    		 * 延迟一帧来集中处理，减少不必要的重绘次数
+    		 */
+    		private function onEnterFrame(event:Event):void
+    		{
+    			removeEventListener(Event.ENTER_FRAME,onEnterFrame);
+    			if(_redrawRequest)
+    			{
+    				_redrawRequest = false;
+    				drawBackground();
+    			}
+    		}
+    		/**
+    		 * 立即重绘
+    		 */		
+    		public function redrawNow():void
+    		{
+    			if(_redrawRequest)
+    			{
+    				_redrawRequest = false;
+    				drawBackground();
+    			}
+    		}
+    
+    		/**
+    		 * 绘制背景遮罩，子类可以覆盖此方法绘制指定的背景。
+    		 */		
+    		protected function drawBackground():void
+    		{
+    			this.graphics.clear();
+    			if(_width==0||_height==0)
+    			{
+    				return;
+    			}
+    			this.graphics.beginFill(_maskColor,_maskAlpha);
+    			this.graphics.drawRect(0,0,_width,_height);
+    			if(_hollowWidth!=0&&_hollowHeight!=0)
+    			{
+    				this.graphics.drawEllipse(_hollowX,_hollowY,_hollowWidth,_hollowHeight);
+    			}
+    			this.graphics.endFill();
+    			this.graphics.lineStyle(2,0xFFCC00,1);
+    			this.graphics.drawEllipse(_hollowX,_hollowY,_hollowWidth,_hollowHeight);
+    			this.graphics.endFill();
+    		}
+    	}
+    }
+    [/as3]

@@ -1,0 +1,242 @@
+---
+author: dom
+comments: true
+date: 2012-08-18 07:17:17+00:00
+layout: post
+slug: as3%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8%e4%ba%8c%ef%bc%9a%e5%9b%be%e5%83%8f%e5%a4%84%e7%90%86%e8%af%91
+title: AS3多线程快速入门(二):图像处理[译]
+wordpress_id: 326
+categories:
+- ActionScript
+- Flash
+tags:
+- Flash Player11.4
+- 多线程
+---
+
+<blockquote>原文链接：[http://esdot.ca/site/2012/intro-to-as3-workers-part-2-image-processing](http://esdot.ca/site/2012/intro-to-as3-workers-part-2-image-processing)</blockquote>
+
+
+
+
+在《AS3多线程快速入门》系列教程的[第一部分](http://esdot.ca/site/2012/intro-to-as3-workers-hello-world)中，我们研究了AS3 Worker的基本原理，包括多种通信方式，还展示了一个简单例子：Hello World Worker。
+
+在这篇文章里，我将更进一步，向你展示如何利用多线程做些有用的功能，比如图像处理！在这次例子中，我将一边给一个大位图应用锐化滤镜，**一边让主UI线程持续保持在30fps的渲染帧率。**
+
+**演示：单线程版本**
+
+你可以在下面简单看看我们要做的是什么。这个是没有使用workers的版本，你可以看到：在位图处理过程中Slider完全锁定了无法移动。<!-- more -->
+
+
+
+注:如果你看不见这个SWF程序，检查下你是否已经下载了[Flash Player11.4](http://labs.adobe.com/technologies/flashplatformruntimes/flashplayer11-4/)。如果使用的是谷歌浏览器，别忘了要[禁用老版本的插件](http://www.howtogeek.com/howto/16705/disable-the-old-adobe-flash-plugin-in-google-chrome/)。
+
+**演示：多线程版本**
+
+下面是同一个演示程序，但是使用了Worker。你可以看到它的UI渲染流畅地保持在30fps。
+
+
+
+注:如果你看不见这个SWF程序，检查下你是否已经下载了[Fash Player11.4](http://labs.adobe.com/technologies/flashplatformruntimes/flashplayer11-4/)。如果使用的是谷歌浏览器，别忘了要[禁用老版本的插件](http://www.howtogeek.com/howto/16705/disable-the-old-adobe-flash-plugin-in-google-chrome/)。
+
+**代码**
+
+在实际开始写代码前，未雨绸缪下是很重要的。尤其是在处理多线程时，我们确实需要创建一个在worker之间调度数据的高效系统。否则，你的主线程将会因为序列化和反序列化数据造成的巨大开销而陷入困境。
+
+经过一点思考，我决定把这个程序设计成这样：
+
+1.bitmapData通过一个shareable为true的byteArray对象来与worker共享。
+2.我们使用bitmapData.setPixels()和bitmapData.copyPixelsToByteArray()方法在bitmapData和byteArray之间来回转换。
+3.主线程发出"SHARPEN"命令给worker，然后worker线程在完成时将返回"SHARPEN_COMPELETE"命令。
+4.worker线程将使用一个间隔500ms的timer来检测是否需要重新启动一个锐化操作。防止运行过度的锐化操作。
+
+**文档类代码**
+
+首先是类结构，这里我们将使用和上一个教程里一样方式：用loaderInof.bytes。这个构造函数会被运行两次，第二次运行的是worker，它会创建一个SharpenWorker类的实例，这个实例将负责处理所有与主线程的通信。
+
+    
+    [as3]
+    public class ImageWorkerExample extends Sprite
+    {
+    public function ImageWorkerExample(){
+    	//主线程
+    	if(Worker.current.isPrimordial){
+    		initUi();
+    		initWorker();
+    	} 
+    	//如果不是主线程，就是worker
+    	else {
+    		sharpenWorker = new SharpenWorker();
+    	}
+    }
+    [/as3]
+
+
+在看SharpenWorker类之前，我们先继续读主类。
+
+initUi()方法只是简单地创建了一个slider，一个image，并且添加他们到舞台。这里不需要去关注它。
+
+下一个方法是initWorker(),可以看看代码内的注释。
+
+    
+    [as3]
+    protected function initWorker():void {
+    	//从主swf里创建worker 
+    	worker = WorkerDomain.current.createWorker(loaderInfo.bytes);
+    
+    	//创建到worker的MessageChannel通信对象
+    	mainToBack = Worker.current.createMessageChannel(worker);
+    
+    	//创建来自worker的MessageChannel通信对象并添加监听.
+    	backToMain = worker.createMessageChannel(Worker.current);
+    	backToMain.addEventListener(Event.CHANNEL_MESSAGE, onBackToMain, false, 0, true);
+    
+    	//现在我们有两个通信对象，把它们作为共享属性注入到worker线程
+    	//这样，worker线程就能在另一边获取它们
+    	worker.setSharedProperty("backToMain", backToMain);
+    	worker.setSharedProperty("mainToBack", mainToBack);
+    
+    	//给worker传递初始化图像宽高尺寸
+    	worker.setSharedProperty("imageWidth", origImage.width);
+    	worker.setSharedProperty("imageHeight", origImage.height);
+    
+    	//转换位图数据并存储到共享的byteArray对象里，与worker线程共享。
+    	imageBytes = new ByteArray();
+    	imageBytes.shareable = true;
+    	origImage.copyPixelsToByteArray(origImage.rect, imageBytes);
+    	worker.setSharedProperty("imageBytes", imageBytes);
+    
+    	//最后，启动worker线程.
+    	worker.start();
+    }
+    [/as3]
+
+
+在以上代码中，我们做了这些事：
+
+1.使用我们自身的loaderInfo.bytes创建了worker。
+2.创建了MessageChannel对象，让主线程和worker线程之间能互相通信。
+3.复制位图数据到共享的byteArray对象内。
+4.与worker线程共享位图数据。
+5.启动worker线程。
+
+下一步操作是在主类里通知worker去锐化位图，并且在完成任务时响应。
+
+首先，我们要添加Slider的CHANGE事件处理函数：
+
+    
+    [as3]
+    protected function onSliderChanged(value:Number):void {
+    	//给我们的worker线程发送锐化命令.
+    	mainToBack.send("SHARPEN");
+    	mainToBack.send(value);
+    }
+    [/as3]
+
+
+然后，我们添加worker的完成任务时的响应函数。
+
+    
+    [as3]
+    protected function onBackToMain(event:Event):void {
+    	var msg:String = backToMain.receive();
+    	if(msg == "SHARPEN_COMPLETE"){
+    		imageBytes.position = 0;
+    		image.bitmapData.setPixels(image.bitmapData.rect, imageBytes);
+    	}
+    }
+    [/as3]
+
+
+以上就完成主类的代码了！
+
+**Worker代码**
+
+worker类的结构非常简单明了：
+
+    
+    [as3]
+    public class SharpenWorker extends Sprite
+    { 
+    public function SharpenWorker(){
+    	//获取当前worker线程的引用(自身)
+    	var worker:Worker = Worker.current;
+    
+    	//监听mainToBack的SHARPEN事件
+    	mainToBack = worker.getSharedProperty("mainToBack");
+    	mainToBack.addEventListener(Event.CHANNEL_MESSAGE, onMainToBack);
+    	//使用backToMain抛出SHARPEN_COMPLETE命令
+    	backToMain = worker.getSharedProperty("backToMain");
+    
+    	//从共享属性缓存池里获取位图数据。
+    	imageBytes = worker.getSharedProperty("imageBytes");
+    	var w:int = worker.getSharedProperty("imageWidth");
+    	var h:int = worker.getSharedProperty("imageHeight");
+    
+    	imageBytes.position = 0;
+    	imageData = new BitmapData(w, h, false, 0x0);
+    	backToMain.send(imageBytes.length);
+    	imageData.setPixels(imageData.rect, imageBytes);
+    
+    	//创建计时器间隔检测锐化值是否已经改变了
+    	timer = new Timer(500);
+    	timer.addEventListener(TimerEvent.TIMER, onTimer, false, 0, true);
+    	timer.start();
+    }
+    [/as3]
+
+
+这里我们做了这些事：
+
+1.持有主线程共享的MessageChanel对象引用。
+2.通过共享的byteArray对象数据初始化bitmapData。
+3.在内部存储byteArray对象的引用，这样我们从现在开始就可以往里面写入数据了。
+4.创建一个Timer来检测是否需要重新锐化。
+
+接下来，我们需要响应SHARPEN请求。这在mainToBack的监听函数里做了处理：
+
+    
+    [as3]
+    protected function onMainToBack(event:Event):void {
+    	if(mainToBack.messageAvailable){
+    		//获取消息类型
+    		var msg:* = mainToBack.receive();
+    		//锐化
+    		if(msg == "SHARPEN"){
+    			targetSharpen = mainToBack.receive();
+    		}
+    
+    	}
+    }[/as3]
+
+
+注意下在这里我们实际上除了存储下锐化值并没有做任何事。如果每一次请求我们都立即应用锐化操作将会非常浪费性能。锐化操作需要超过500ms时间才能完成，但是主线程会以33ms的间隔发送锐化命令。所以很明显，如果我们响应每次请求将会造成巨大的堵塞。最终你的worker线程会崩溃。
+
+相反，我们在时间间隔500ms的TIMER事件处理函数里应用锐化滤镜：
+
+    
+    [as3]
+    protected function onTimer(event:TimerEvent):void {
+    	if(targetSharpen == currentSharpen){ return; } //直到锐化值改变才启动锐化
+    	currentSharpen = targetSharpen;
+    
+    	//锐化位图并复制它到byteArray对象里
+    	var data:BitmapData = ImageUtils.SharpenImage(imageData, currentSharpen);
+    	imageBytes.length = 0;
+    	data.copyPixelsToByteArray(data.rect, imageBytes);
+    
+    	//通知主线程锐化操作已经完成
+    	backToMain.send("SHARPEN_COMPLETE");
+    }
+    [/as3]
+
+
+这就是所有的代码了。主线程将会发送附带锐化值的SHARPEN命令，worker线程获取到它后，更新共享的byteArray对象数据并发回SHARPEN_COMPLETE命令。一旦接收到SHARPEN_COMPLETE命令，主线程将会使用共享的byteArray数据更新位图显示对象。
+
+注：如果你对锐化操作本身比较感兴趣，这个优秀的滤镜来自[gskinner.com](https://github.com/gskinner/AS3Libs).
+
+你可以在这里下载到完整的测试代码工程：
+
+[ImageWorkerExample](http://blog.domlib.com/wp-content/uploads/2012/08/ImageWorkerExample.zip)(包括没有多线程的代码例子）
+
+多线程使用愉快！

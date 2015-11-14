@@ -1,0 +1,95 @@
+---
+author: dom
+comments: true
+date: 2012-01-14 10:13:00+00:00
+layout: post
+slug: as%e9%9b%b6%e7%a2%8e%e7%ac%94%e8%ae%b0
+title: AS零碎笔记
+wordpress_id: 97
+categories:
+- ActionScript
+tags:
+- 笔记
+- 闭包函数
+---
+
+<blockquote>从初学AS到现在，遇到过不少的问题，有些是第一次遇见容易出错的，有些是容易混淆的，现在记录下印象比较深的犯过的错，对自己也是个提醒吧：</blockquote>
+
+
+**      **1.Number类型变量不赋值的话，初值为NaN(Not a Number),NaN与所有数字的运算，返回结果都是NaN，所以计算时或判断时务必记得给Number赋初始值！
+
+    
+    [as3]
+      trace(100+NaN);//NaN
+      trace(0==NaN);//false
+      trace(0!=NaN);//true
+      trace(NaN==NaN);//false
+    [/as3]
+
+
+**    **2.网上曾有文章说过，BitmapData释放内存必须要调用dispose()方法。但用概要分析测试过后，证实BitmapData跟其他对象一样，只要引用都断开就会被回收。不需要执行dispose()方法。另外，测试过程中发现本机调试版的FP无法内存回收，要用网页的版本才行<!-- more -->
+
+**    **3.包括数组在内的很多列表数据结构类型和显示列表，删除元素时都会自动更新剩余元素的索引位置，所以，for循环清空列表的正确方法是每次删除第一个元素，这个错误看起来简单，但是很多人都犯过。
+
+**    **4.AS中闭包函数的创建是在整个父级函数执行完成之后，所以如果有for循环中创建的闭包函数，获取到的值都是for循环结束后最后的那个属性。每个闭包函数都是一样的，造成跟你的预计结果不同。关于这个的测试说明天地会有一篇比较好的文章可以看看：[http://bbs.9ria.com/thread-44254-1-1.html](http://bbs.9ria.com/thread-44254-1-1.html)
+
+**    **5.还是闭包函数的，闭包函数中如果引用了所在类的变量，请不要使用this关键字。直接引用那个变量即可。因为闭包函数的this关键字的指向会随着调用者而改变。
+
+    
+    [as3]
+    package
+    {
+    	public class Test
+    	{
+    		public function Test()
+    		{
+    
+    		}
+    
+    		private var testNum:Number = 9;
+    
+    		public function getHasThisFunc():Function
+    		{
+    			function callBack():void
+    			{
+    				trace(this.testNum);//错误写法！
+    			}
+    			return callBack;
+    		}
+    
+    		public function getNotHasThisFunc():Function
+    		{
+    			function callBack():void
+    			{
+    				trace(testNum);//正确的写法。
+    			}
+    			return callBack;
+    		}
+    	}
+    }
+    [/as3]
+    [as3]
+    package
+    {
+    	import flash.display.Sprite;
+    
+    	public class RunTest extends Sprite
+    	{
+    		public function RunTest()
+    		{
+    			var test:Test = new Test;
+    			var hasThisFunc:Function = test.getHasThisFunc()
+    			hasThisFunc();//this指向RunTest未定义testNum，输出：undefined
+    			var notHasThisFunc:Function = test.getNotHasThisFunc();
+    			notHasThisFunc();//正确输出：9
+    		}
+    	}
+    }
+    [/as3]
+
+
+**    **6.MouseEnabled和MouseChildren属性。这两个属性默认都为true。设置他们都只影响到一件事：显示对象能不能成为事件的target，也就是事件触发者。MouseChildren=false相当于一次将所有子对象的MouseEnabled属性置为flase。设置一个显示对象的MouseEnabled属性为false，只是使它自身不能作为事件的触发者，但并不影响事件冒泡机制，所以若它的子对象被点击了，它也能监听到点击事件。因此，彻底禁用一个显示对象的鼠标事件的方法是将MouseEnabled和MouseChildren都设置为false。若子对象的MouseEnabled属性为false，若它后面还有其他可以点击的子对象，则相当于透明了，事件触发对象将是后面的子对象。若没有其他子对象，它自身的点击区域将作为父级的点击区域一部分，使父级成为事件触发者。
+
+**    **7.关于内存回收：监听在loader上的事件一定要及时移除，因为loader跟stage一样属于根节点，如果它持有你的函数引用，将会导致你不能被回收。同样的道理适用于stage和任何单例。URLLoader没有这个问题。
+
+**    **先这些吧，以后还有再补充！

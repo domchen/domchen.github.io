@@ -1,0 +1,47 @@
+---
+author: dom
+comments: true
+date: 2013-10-26 07:45:28+00:00
+layout: post
+slug: air%e5%ae%9e%e7%8e%b0%e9%87%8d%e6%96%b0%e5%90%af%e5%8a%a8%e7%a8%8b%e5%ba%8f%e7%9a%84%e6%96%b9%e6%b3%95
+title: AIR实现重新启动程序的方法
+wordpress_id: 577
+categories:
+- ActionScript
+- AIR
+- FLEX
+tags:
+- AIR
+- 程序
+- 重新启动
+---
+
+代码非常简单：
+
+    
+    [as3]
+    private function reboot():void
+    {
+    	var mgr:ProductManager = new ProductManager("airappinstaller");
+    	mgr.launch("-launch " + NativeApplication.nativeApplication.applicationID + " " + NativeApplication.nativeApplication.publisherID);
+    	NativeApplication.nativeApplication.exit();
+    }
+    
+    [/as3]
+
+
+要注意几点：
+1.ProductManager代码提示是打不出来的。应该是在源码里用[ExcludeClass]元标签做了屏蔽。手动导入包即可：import adobe.utils.ProductManager;
+2.最关键的一点：记得在配置文件app.xml里把这行设置为true。
+
+    
+    
+    [xml]
+    <allowbrowserinvocation>true</allowbrowserinvocation>
+    [/xml]
+    
+
+
+3.导出发行版的程序才能生效。
+
+4.要导出本机安装程序,也就是在windows上发行版的安装包扩展名是exe。

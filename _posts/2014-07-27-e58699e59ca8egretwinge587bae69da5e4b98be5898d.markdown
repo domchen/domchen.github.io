@@ -1,0 +1,37 @@
+---
+author: dom
+comments: true
+date: 2014-07-27 15:47:26+00:00
+layout: post
+slug: '%e5%86%99%e5%9c%a8egretwing%e5%87%ba%e6%9d%a5%e4%b9%8b%e5%89%8d'
+title: 写在EgretWing出来之前
+wordpress_id: 706
+categories:
+- Egret
+- FLEX
+- FlexLite
+- UI框架
+tags:
+- Egret GUI
+- EgretWing
+---
+
+剧透一下：经过我们软件工具团队的努力，Egret Wing应该会提早跟大家见面。第一个公开测试版预计会在两月后发布。在发布之前,为了让大家少走弯路，我感觉很有必要说明一件事：千万千万别直接从编辑器开始学Egret GUI。
+
+[![Splash](http://blog.domlib.com/wp-content/uploads/2014/07/Splash.png)](http://blog.domlib.com/wp-content/uploads/2014/07/Splash.png)
+<!-- more -->
+先说一下Egret GUI的来历。这要先说FlexLite这个开源框架。详细信息可以参考这里：FlexLite游戏UI解决方案 简单说：FlexLite是基于Flex4 Spark架构用纯AS3重写的。以10%的代码量，为游戏专门精简优化了一个版本。剔除了所有冗余的功能，和损耗性能的部分，并保留了最能提高开发效率的自动布局和皮肤分离机制。而Egret GUI是在FlexLite的基础上，针对H5游戏做的进一步精简优化。
+
+以下是针对Egret GUI框架原理讲解的三篇教程：
+
+[深入浅出EGRET GUI (一):皮肤分离机制](http://bbs.egret-labs.org/thread-43-1-1.html)
+
+[深入浅出EGRET GUI (二):失效验证机制](http://bbs.egret-labs.org/thread-73-1-1.html)
+
+[深入浅出EGRET GUI (三):AFL自适应流式布局](http://bbs.egret-labs.org/thread-102-1-1.html)
+
+在两年多维护FlexLite的时间里。遇到不少开发者这样说：你这个GUI框架怎么这么复杂？然后扭头就走了。虽然有教程，但是因为这个不是基于现有知识体系的。确实没法什么文档都不看就直接上手。那三篇教程已经是第二遍写了。梳理了一遍，都是满满的干货，花点时间应该比较好理解的。万事开头难。一旦跨过这个坎，后面就能体会到自动布局和皮肤分离带来的开发效率明显提升了。
+
+FlexLite一开始也没有编辑器，后期才推出了FlexLite Studio。其实没有编辑器的时候，大家学的还挺好的。有了编辑器之后，好多初学者开始跳过教程，直接从可视化编辑器开始上手。然后根本找不到对应的功能在哪。也无法理解做一个皮肤需要哪些东西。然后一顿吐槽软件不人性化，也走了。
+
+总之，这套GUI，对没接触过Flex架构的人来说。只以现有的知识体系是无法直接上手的。如果跳过了那三篇教程，只关注可视化工具本身，会白白浪费自己的宝贵时间。首先你得会用纯代码把UI写出来。然后Egret Wing会让你把做皮肤的时间成本降到无限低。之后你就只关注纯粹的业务逻辑就行了。

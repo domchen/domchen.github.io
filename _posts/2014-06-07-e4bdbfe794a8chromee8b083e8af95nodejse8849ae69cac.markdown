@@ -1,0 +1,42 @@
+---
+author: dom
+comments: true
+date: 2014-06-07 15:37:19+00:00
+layout: post
+slug: '%e4%bd%bf%e7%94%a8chrome%e8%b0%83%e8%af%95nodejs%e8%84%9a%e6%9c%ac'
+title: 使用Chrome调试NodeJS脚本
+wordpress_id: 686
+categories:
+- NodeJS
+tags:
+- NodeJS
+- 调试
+---
+
+1.首先在命令行执行npm以全局模式安装node-inspector插件：
+
+npm install -g node-inspector
+
+2.然后用node命令执行需要调试的脚本，但是要加上–debug-brk参数，例如：node –debug-brk=5858 test.js
+
+[![](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs.jpg)](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs.jpg)
+
+脚本现在就已经断点在了第一行，并且在等待5858端口的监听程序启动。
+
+3.重启一个命令行窗口（注意是重启一个新的窗口！），然后执行：node-inspector
+
+[![](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs21.png)](http://blog.domlib.com/wp-content/uploads/2014/06/nodejs21.png)
+<!-- more -->
+
+
+
+4.根据提示，在谷歌浏览器里输入地址就可以开始调试了：http://127.0.0.1:8080/debug?port=5858
+
+[![](http://blog.domlib.com/wp-content/uploads/2014/06/chrome.png)](http://blog.domlib.com/wp-content/uploads/2014/06/chrome.png)
+
+关于谷歌浏览器调试技巧，可以参考[这篇文章](http://han.guokai.blog.163.com/blog/static/136718271201321402514114/)
+
+写在最后：这种调试方式只建议给使用纯文本编辑器写NodeJS脚本的开发者。更加方便的方式推荐直接使用WebStorm开发。有代码提示，也可以在IDE里直接断点调试。在WebStorm里创建一个普通工程，开始写js脚本，当你引用到nodejs 提供的API时，webstorm会提示你下载nodejs源码包，照提示一步一步操作即可。调试直接在js脚本上右键点“Debug xx.js”。
+
+[更新]
+后来发现更简单的方案，其实安装过node-inspector之后，根本不用手动再配置任何东西来启动调试。直接用node-debug命令替代node去执行目标脚本，会自动呼出chrome开始调试。

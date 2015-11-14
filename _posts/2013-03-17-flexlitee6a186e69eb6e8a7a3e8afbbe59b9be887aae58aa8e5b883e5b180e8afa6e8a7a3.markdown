@@ -1,0 +1,124 @@
+---
+author: dom
+comments: true
+date: 2013-03-17 06:28:59+00:00
+layout: post
+slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e5%9b%9b%e8%87%aa%e5%8a%a8%e5%b8%83%e5%b1%80%e8%af%a6%e8%a7%a3
+title: FlexLite框架解读(四):自动布局详解
+wordpress_id: 452
+categories:
+- ActionScript
+- Flash
+- FlexLite
+- UI框架
+tags:
+- FlexLite
+- 框架解读
+- 自动布局
+---
+
+前几篇教程下来，相信大部分童鞋都已经可以上手使用框架了。但是根据反馈的结果看，很多人都还是对自动布局这一块不太熟悉，尤其是调试的时候，无从下手。主要也是因为这块内容相关的用法比较零散，需要一定时间摸索总结才行。所以今天这篇教程，就花点力气在自动布局的总结上吧。这次的内容与Flex原理完全一致，所以面向Flex/FlexLite开发者都适用。即使你是Flex开发者，如果还没完全整明白自动布局，不妨也看一看，巩固一下。以下内容不区分Flex/FlexLite,统称"框架"。
+
+**原理讲解**
+
+首先说下自动布局的本质，自动布局没有什么特别神奇的地方，就是封装了各种更加便捷的布局属性和方法，结合失效验证机制(参考[第二篇教程](http://blog.domlib.com/articles/417.html))，在合适的触发条件下(如尺寸发生改变时)，自动设置相关对象的x，y,width,height等属性。所以无论过程是怎么样的，最终结果都是直接体现在x,y,width,height这些最原始的属性上，还是离不开Flash原始的API。
+
+在[第二篇教程](http://blog.domlib.com/articles/417.html)中，我们已经详细介绍过了跟自动布局相关的两个方法：measure()和updateDisplayList()。如果有概念模糊的地方，请回头重新看一下。这里只总结下它俩的用途，measure()负责测量出自身能恰好放下所有子项或完整显示内容(比如文本)的最佳尺寸，updateDisplayList()负责布局子项(即设置子项的x,y,width,height),或做一些矢量重绘操作。updateDisplayList()我们都很好理解，自动布局就是在这里实现的。那为什么要measure()呢？举个例子，你有一个容器(Group)，里面放了一个文本(Label)，你想要文本始终在容器中水平居中(horizotalCenter=0)。那么你不显式设置文本的width即可，这时measure()方法就派上用场了，它会在文本内容改变时，自动测量出当前合适的width，父级就会根据这个width，重新布局它的xy。<!-- more -->这就是measure()方法的用途：**框架里所有的组件都应该是这样，如果你不显式设置它的宽高，它就调用measure()方法给自己测量出一个最佳尺寸出来。反之，如果你设置了组件为固定尺寸，就按照你显式设置的尺寸。若同时被设置了width和height，measure()方法将不会再被调用。**至于何为测量的"最佳尺寸"？不同的组件有自己的测量方式，容器是以能刚好放下所有子项为最佳尺寸。文本是以能完整显式文本内容为最佳尺寸。还有其他的组件，具体在各自的measure()方法里实现。多个组件都需要测量的时候，会按照显式列表深度，从内向外测量。而布局阶段正好相反，从外向内。具体细节参考[第二篇教程](http://blog.domlib.com/articles/417.html)的内容，这里不再赘述。总之，如果你希望你自定义的组件像框架里的标准组件一样，有自动布局的功能，就必须要同时复写measure()和updateDisplayList()这两个方法。
+
+以上内容告诉我们，实现自动布局的关键就是复写measure()和updateDisplayList()这两个方法。而我们在UIComponent里可以看到，这两个方法的方法体是空的，也就是说UIComponent是不具有自动布局功能的，它的子项组件才有。那么我们就先来看最重要的一个自动布局实现类：GroupBase容器基类。它是Group和DataGroup的基类，也就是说，所有容器和列表容器，都是继承自它的布局方法。那它就一个类，是如何实现的多种多样的布局方式的呢？答案是：它不负责具体的布局规则，而是做了一个解耦处理。增加了一个layout的属性，类型为LayoutBase。我们先看下GroupBase的那两个方法体里写了什么：
+
+    
+    [as3]
+    
+    override protected function measure():void
+    {
+    	if(!_layout||!layoutInvalidateSizeFlag)
+    		return;
+    	super.measure();
+    	_layout.measure();
+    }
+    
+    override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+    {
+    	super.updateDisplayList(unscaledWidth, unscaledHeight);
+    	if (layoutInvalidateDisplayListFlag&&_layout)
+    	{
+    		layoutInvalidateDisplayListFlag = false;
+    		_layout.updateDisplayList(unscaledWidth, unscaledHeight);
+    		_layout.updateScrollRect(unscaledWidth, unscaledHeight);
+    	}
+    }
+    [/as3]
+
+
+我们先忽略无关的代码(比如layoutInvalidateSizeFlag和layoutInvalidateDisplayListFlag),剩下的就很容易看明白了，GroupBase把自己的measure()方法交给了layout.measure()去实现，updateDisplayList()交给了layout.updateDisplayList()去实现。也就是说，GroupBase把具体的布局方式(那两个方法的方法体)解耦了出来，成了独立的一个类LayoutBase。这样所有的容器都可以采用组合的方式，为自己设置任意的布局。再去看LayoutBase类，它有一个target属性，类型是GroupBase。LayoutBase的子类，就是通过在measure()和updateDisplayList()中操作target，而实现对目标容器的布局的。
+
+看到这了，思路应该很清晰了吧？容器的布局就去看LayoutBase的子类里的measure()和updateDisplayList()方法，非容器组件的布局就去看具体组件的measure()和updateDisplayList()方法。由于非容器组件的布局没用通用意义，大家使用自动布局的时候，一般也不会在它们上有疑问。这里我们就只关注容器的布局就行了。也就是关注LayoutBase的子类即可。
+
+**各种布局类**
+
+LayoutBase的典型子类有四个：BasicLayout(基本布局)，HorizontalLayout(水平布局)，VerticalLayout(垂直布局)，TileLayout(网格布局)。下面概括性地总结下每个布局类。具体细节从源码里都可以看到，限于篇幅，代码这里就不贴出来了。
+
+1.BasicLayout
+
+这个是最简单的布局类，也是Group容器的默认布局。如果你没有显式设置一个layout给Group，Group在被添加到显示列表时，就会默认创建一个BasicLayout赋值给layout属性。我们通常情况下使用最多的也是这种个布局类。它的类代码非常简单，就两个方法，不用我告诉你是哪两个了吧？:) 它主要操作子项(ILayoutElement)的top,left,right,bottom,horizontalCenter,verticalCenter,percentWidth,percentHeight等属性，根据这些属性的组合来完成布局。下面简单介绍下这些布局属性：
+
+top代表子项的顶部距离父级容器顶部多少像素，跟直接设置y是一样的效果，但是如果你同时设置了y和top，top的优先级比y高，将会以top为准。bottom就是子项的底部距离父级容器底部多少像素。这跟父级容器和子项的height都有关。例如父级容器height为100，子项height为50，这时单独设置子项bottom=10。那最终的结果就是，子项的y为100-10-50 = 40。那如果同时设置top和bottom呢？这时为了保证top和bottom都正确，就会拉伸子项的height了。那如果又同时显式设置了子项的height呢？跟前面一样，布局属性优先级是最高的，以布局属性的设置为准。left和right只是方向不同，同理不解释。这四个属性的一个经典应用就是top = left = right = bottom = 0;意思是让子项铺满父级容器，始终跟随父级容器大小改变自己的大小。另外注意，这四个属性都可以为负值。就是超出父级容器的边缘。
+
+horizontalCenter很容易看出来，是水平居中的意思。设置horizontalCenter为0。就是让子项的水平中心点和父级容器的水平中心点对齐。这个值也可以为正负值。设置horizontalCenter为10表示，在中心对齐的情况下，再向右偏移10像素。-10就是向左偏移10像素。这个属性都只影响子项的x，不影响width。但它的优先级比left，right对x的影响更高。如果同时都设置了，子项x将以horizontalCenter的设置为准。verticalCenter同理，也不解释了。如果感觉有点绕，去看代码就明白了。
+
+percentWidth只影响width。但是它比left+right的方式优先级低。它是个百分比，设置percentWidth为100。将会拉伸子项的width跟父级容器一样。你可以设置其他值，50什么的，那就是父级的一半。这种方式与设置left+right的方式差别是，percentWidth不影响x，此时你仍然可以设置x，或者单独的left和right，组合使用。percentHeight同理不解释。
+
+总结下: horizontalCenter,verticalCenter只影响x,y，percentWidth,percentHeight只影响width,height。top,left,right,bottom既影响xy又影响width,height。对坐标的影响优先级： horizontalCenter,verticalCenter > top,left,right,bottom。对尺寸的影响的优先级：top,left,right,bottom > percentWidth,percentHeight。另外，以上所有属性，如果想取消显式设置，赋值为NaN即可(0也是显式设置的值，只有NaN表示不设置这个属性)。
+
+2.HorizontalLayout和VerticalLayout
+
+这两个类放一起写，主要是因为它俩除了方向不同，逻辑完全一致。它们主要用在列表数据容器里。DataGroup的默认布局类是VerticalLayout。如果你不熟悉DataGroup这个类，可以简单说下：所有列表类组件，包括List，TabBar,Tree等，内部其实都是用一个DataGroup来显示数据项的。这里要注意下：**它们操作的子项布局属性只有percentWidth和percentHeight，top和left等其他属性都是无效的**，大部分布局样式都直接在布局类上设置，不在子项上。下面就以VerticalLayout为例子来说，HorizontalLayout同理不解释。
+
+VerticalLayout表示按子项显示深度顺序从上到下一个接一个排列子项，子项可以高度不同。如果子项设置了percentWidth，则跟BasicLayout里一样，子项宽度会被设置成父级容器的相应百分比。但是percentHeight在这里跟BasicLayout是不同的：是排列完所有固定高度的子项后，父级容器还剩余的高度空间(extraHeight)，按照percentHeight分配给对应子项。分配规则是这样：例如有两个子项都设置了percentHeight，一个100，一个80。则分配给它们的高度分别为extraHeight*100/(100+80),extraHeight*80/(100+80)。percentHeight在这里已经不是相对父级的百分比了，而是相对其他子项的比例值。如果只有一项，永远是分配到所有extraHeight。
+
+子项上的布局属性解释完了，下面接着说布局类上的属性。首先是四个内边距属性：paddingLeft，paddingRight，paddingTop和paddingBottom。这个很好理解，就是在四边各留出多少空白空间来。这里FlexLite与Flex不同的地方是，增加了一个padding属性，可以快速设置四个方向的内边距默认值，但是显式设置了任何一边，都以显式设置的为准。举个例子，如果要设置左边距10，其它三边5。这样写即可：padding = 5;paddingLeft = 10;取消某一边的显式设置，同样是赋值为NaN。
+
+VecticalLayout.horizontalAlign属性，子项的水平对齐方式。参考HorizontalAlign类定义的静态常量，默认值是HorizontalAlign.LEFT，即左对齐。HorizontalAlign.RIGHT和HorizontalAlign.CENTER都不用解释就明白了。这里说下HorizontalAlign.JUSTIFY和HorizontalAlign.CONTENT_JUSTIFY的区别，前者是强制设置所有子项跟父级容器一样宽，后者是设置所有子项与最宽的那个子项一样宽。而对于VecticalLayout.verticalAlign属性，由于本身是垂直布局，所以这个属性只支持VerticalAlign.TOP，VerticalAlign.MIDDLE和VerticalAlign.BOTTOM。不支持VerticalAlign.JUSTIFY，VerticalAlign.CONTENT_JUSTIFY。HorizontalLayout的这两个属性，刚好相反。最后是gap属性，就是每项之间的间距，这个没什么好说的。
+
+最后说下这两个布局类都支持useVirtualLayout属性，叫做虚拟布局，当为true时开启。虚拟布局功能只针对DataGroup使用。简单解释下原理：虚拟布局是一种性能优化措施。在列表组件中，可能数据源的项数目非常巨大，但是开启虚拟布局后，只实例化你能看见的几项，然后滚动的过程中，通过重新填装数据来复用子项。当你向上滚动时，滚出屏幕的子项就会被移动到底部重新填装数据接着滚回来，这样不断连续。视觉上看不出差别，但性能优化很明显。水平和垂直布局在开启虚拟布局后，就是要假装目标容器有那么多子项，需要缓存实例化过的子项尺寸，然后进行测量和布局。如果对具体实现有兴趣，请查看源码吧。
+
+3.TileLayout
+
+网格布局，以最大子项的尺寸为标准划分格子。它和水平/垂直布局一样，操作的子项布局属性只有percentWidth和percentHeight，其他无效。不过这两个属性的作用改成了相对一个格子的大小，不是相对父级容器的。自身的属性：padding内边距属性同上，不解释。也有horizontalAlign和verticalAlign，不过都是相对一个格子内的对齐方式。如果想设置格子的对齐方式，就设置columnAlign和rowAlign属性。格子间距分为：horizontalGap(水平间距)和verticalGap(垂直间距)。columnWidth(列宽)和rowHeight(行高)属性能显式指定格子大小，不再使用最大子项的尺寸作为格子大小。requestedRowCount和requestedColumnCount能显式指定需要多少行多少列。orientation属性指定按行排列还是按列排列。这些属性的用法都可以在API注释中查看，比较详细，在此不再赘述。
+
+有必要说的一个地方是，由于TileLayout是同时两个方向(水平和垂直)的排列布局，所以对它的测量带来了一定困难。如果是按行排列(orientation==TileOrientation.ROWS)情况下,测量的高度要根据显式的宽度值才能确定。所以当宽度不是显式设置时，它就无法准确测量高度了。如果要实现准确测量也是有方法的。就是要测量两次。第一次放弃测量，等到target的父级容器确定了target的宽度时，回头再触发一次测量。不过也许是出于性能考虑，也许是其他原因，Flex里并没有采用这种做法，默认的做法是在这种情况下，让它尽可能显式成一个正方形。FlexLite暂时沿用了这个策略。所以在没有显示设置宽度的情况下，测量结果可能会有误，结果就是高度可能不正确。出现了滚动条或者其他情况。避免出现这种情况的方式就是：显示设置目标容器的宽度或设置requestedColumnCount属性(如果是按列布局，就是显示设置容器的高度或requestedRowCount属性)。总之避免两个方向同时不设置，导致都需要靠测量的情况。基本上也很少会有两个方向都不显式设置的需求出现，那时测量出个正方形，其实也应该是符合需求的。
+
+**各种布局相关属性**
+
+上面的布局类里简单介绍了几个UIComponent上的布局属性。除了那些，我们平时还会看到其他与布局和调试相关的属性。这里都简单过一遍。
+
+1.includeInLayout：指定此组件是否包含在父容器的布局中。若为false，则父级容器在测量和布局阶段都忽略此组件。默认值为true。visible属性与此属性不同，设置visible为false，父级容器仍会对其布局。如果你想"完全"隐藏掉一个组件，同时设置它的visible和includeInLayout为false即可。
+2.explicitWidth，explicitHeight：显式设置的宽高值。默认情况下这两个值是NaN。当你显式调用width或height的setter方法赋值时，就会同时对这两个值赋值。width/height的值不一定会一直是你设置的值。如果你设置了布局属性（top+bottom等），就会导致width/height被父级设置成其他值。(父级是通过setActualSize()方法设置宽高的，不会触发setter方法)。所以这两个属性的作用就是保存你显式设置的值。调试的时候也可以根据这个判断，是否是被显式设置了尺寸，还是父级强制布局的。
+3.measuredWidth，measuredHeight：每个组件measure()方法执行的最终结果就是对这两个属性赋值。它们只记录测量结果。
+4.maxWidth,minWidth,maxHeight,minHeight：这四个属性从名字上应该就能看出来意思。最大和最小尺寸。他们只影响测量的值。也就是你没有显式设置组件宽高的时候才有效。measure()方法执行完会对5.measuredWidth，measuredHeight赋值一次。然后交给UIComponent里的validteSize()方法，再次规范测量结果。这时候就根据这四个值来规范的。最终确定measuredWidth，measuredHeight的值。
+6.width,height：这两个属性想必不用说是什么了。不过这里要解释下确定它的优先级。width和height永远是最终值。如果没有显式设置它们，就会根据测量的值赋值到它们上，显式设置了，就以显式设置的值为准，但是如果同时设置top+bottom这种布局属性的值，就会以布局属性为准。总结下优先级就是：布局设置的值 > 显式设置的值 > 测量的值。
+7.preferredWidth，preferredHeight：首选宽高，这两个值通常在measure()方法中被调用。只是个便捷方法，按照explicitWidth，explicitHeight > measuredWidth，measuredHeight的优先级返回值。布局类在measure()方法中，调用子项的这个属性，来获取子项的测量结果。累加到自身的测量结果上。注意这个值已经包含scale的值。
+8.layoutBoundsWidth,layoutBoundsHeight：布局宽高，这两个值通常在updateDisplayList()方法中被调用。也是个便捷方法。按照 布局设置的宽高 > explicitWidth，explicitHeight > measuredWidth，measuredHeight的优先级返回值。注意这个值已经包含scale的值。
+9.preferredX,preferredY,layoutBoundsX,layoutBoundsY：可以忽略这四个属性，目前就是xy的值。
+
+**调试技巧**
+
+[终于快写完了，好鸡冻。。。]
+
+调试自动布局相关的东西，比较需要经验。如果一个组件的尺寸不正确，一般情况下，可以参照这个顺序来找问题：
+(1)自身是否被显式设置了尺寸？查看explicitWidth，explicitHeight。如果显式设置了，设置的对吗？不对找到问题。没有显式设置就继续。
+(2)测量的尺寸对不对？查看measuredWidth，measuredHeight。不对，继续。对，跳到(5)
+(3)查看top,left,right,bottom,horizontalCenter,verticalCenter,percentWidth,percentHeight这些布局属性对不对。注意：只有BasicLayout下这些属性才全部有效。
+(4)布局类对吗？查看layout属性。以上都查过了，找不出问题，继续。
+(5)查看父级容器的相关属性，是否正确。是否是父级容器强制设置了我们的尺寸。
+(6)查看子项以及子项的子项的测量尺寸。找到第一个开始不对的节点。研究它为啥不对。
+
+这么一遍下来，基本上没有解决不了的布局问题。最后推荐个方便调试用的，显示列表查看工具, 在org.flexlite.domUtils包下的Debugger类。先上图：
+[![Debugger](http://blog.domlib.com/wp-content/uploads/2013/03/Debugger.png)](http://blog.domlib.com/wp-content/uploads/2013/03/Debugger.png)
+
+启用很简单，一行代码即可。在能访问到stage的地方调用Debugger.initialize(stage);。快捷键：F11开启或关闭调试;F12开启或结束选择;F2复制选中的属性名;F3复制选中属性值;F5:最大化或还原属性窗口。大家可以在FlexLiteTest那个项目任何一个测试例子里，直接按F11就可以呼出调试面板。首先要选中界面上的一个显示对象。然后就可以在面板中查看它的所有属性(包括它的父级和所有子项)。选择模式有两种：基于显示列表或者基于鼠标事件。前者会选中你鼠标下的最内层显示对象，无论它是否能响应鼠标时间，后者必须有鼠标事件的对象才能被选中。如果你这时候无法点击。也可以使用F12代替点击，直接选取鼠标下的对象。
+
+好长一篇，写的手都软了。希望对大家有帮助。欢迎留言~
+
+[返回FlexLite相关文章目录](http://blog.domlib.com/uiframework)

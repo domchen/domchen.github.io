@@ -1,0 +1,46 @@
+---
+author: dom
+comments: true
+date: 2012-02-13 16:43:28+00:00
+layout: post
+slug: '%e5%91%bd%e4%bb%a4%e8%a1%8c%e7%bc%96%e8%af%91%e5%b7%a5%e5%85%b7mxmlc'
+title: 命令行编译工具mxmlc
+wordpress_id: 161
+categories:
+- Flash
+- FLEX
+- UI框架
+tags:
+- mxmlc
+- UI
+---
+
+**      **最近在研究怎么实现针对自己的UI框架的XML可视化编辑器，发现flex的命令行编译工具mxmlc蛮好用的，就尝试了一下。简单的思路是：用xml编辑UI；然后自己写一个XML to AS代码的文本编译器；再用mxmlc实时编译as文本为swf文件；最后在编辑器里加载进来显示并编辑属性并把改变的属性值填回到xml文件。就实现对xml文件的实时预览编辑了。
+
+**      **mxmlc 有个参数非常不错：-keep-generated-actionscript，可以把编译结果的AS文件保存下来。我试着对Flex原始的ButtonSkin.mxml进行编译，得到了对应的as文件和swf文件。通过研究生成的as文件，我周末写了两天，就把针对自己框架的XML to AS代码的编译器写好了。并且可以兼容Flex原始的皮肤文件，直接把Flash Catalyst导出的mxml皮肤编译成我的框架里支持的代码。这样的好处就是以后可以直接使用强大的Flash Catalyst为我的UI框架制作皮肤了，跟Flex流程一样。后期我打算再添加个UIElement组件，兼容针对游戏开发里更常用的swf导出的素材。实现统一的可视化编辑。<!-- more -->
+
+**      **但是当我尝试单独用库编译一个生成的ButtonSkin.as为swf的时候，遇到点问题。编译成功的swf文件加载进来总是报错：找不到mx.core::ByteArrayAsset类定义。我又仔细检查了一遍，我的UI框架里没有任何一处有引用过这个Flex的类啊。折腾了半天，最后发现了。。你随便新建一个纯Actionscript工程，FB除了帮忙把核心的playerglobal.swc引用进来了，还默认引用了另外四个库。core.swc，osmf.swc，textLayout.swc，authoringsupport.swc。
+
+[![lib](http://blog.domlib.com/wp-content/uploads/2012/02/lib_thumb.jpg)](http://blog.domlib.com/wp-content/uploads/2012/02/lib.jpg)
+
+**      **而那个mx.core::ByteArrayAsset类就是在core.swc里面。原来即使你使用纯AS代码而不使用Flex框架写项目，mxmlc编译器也是要引用一个最小子集的Flex框架的(core.swc里的代码在framework.swc完全包含）。通过查看编译后生成的代码，我发现只要使用了原标签[Embed],mxmlc就会默认帮你生成一些Flex代码，其中就用到了mx.core::ByteArrayAsset。而在命令行编译的时候，mxmlc加载的默认配置文件flex-config.xml是只设置了playerglobal.swc的引用的。所以默认编译的时候缺少了那四个库，当你用到了特定的原标签时，生成的代码就会报错了。我的框架里就用到了[Embed]。
+
+**      **解决办法就是编译时附加上以下的配置文件,设置下其他四个库的引用.加载配置文件的参数是：mxmlc -load-config+=config.xml
+
+    
+    [xml]
+    
+    
+          false
+    
+             E:\Program\Flash\Flexlite\bin\Flexlite.swc
+             D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\core.swc
+    		 D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\authoringsupport.swc
+    		 D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\osmf.swc
+    		 D:\Program Files\Adobe\Adobe Flash Builder 4.6\sdks\4.6.0\frameworks\libs\textLayout.swc
+    
+             src
+    
+    	true
+    
+    [/xml]

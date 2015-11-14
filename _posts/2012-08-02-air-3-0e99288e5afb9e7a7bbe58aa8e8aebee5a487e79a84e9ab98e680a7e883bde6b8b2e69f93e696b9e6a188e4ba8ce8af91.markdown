@@ -1,0 +1,219 @@
+---
+author: dom
+comments: true
+date: 2012-08-02 15:01:55+00:00
+layout: post
+slug: air-3-0%e9%92%88%e5%af%b9%e7%a7%bb%e5%8a%a8%e8%ae%be%e5%a4%87%e7%9a%84%e9%ab%98%e6%80%a7%e8%83%bd%e6%b8%b2%e6%9f%93%e6%96%b9%e6%a1%88%e4%ba%8c%e8%af%91
+title: AIR 3.0针对移动设备的高性能渲染方案(二)[译]
+wordpress_id: 291
+categories:
+- ActionScript
+- AIR
+- Flash
+- UI框架
+- 游戏开发
+tags:
+- AIR3.0
+- GPU加速
+- 性能优化
+- 游戏
+- 移动开发
+---
+
+<blockquote>紧接上一篇，原文链接：[Fast Rendering in AIR: Cached SpiteSheet](http://esdot.ca/site/2012/fast-rendering-in-air-cached-spritesheets) 以下是译文：</blockquote>
+
+
+** **在上一篇文章中，我展示了如何正确地使用AIR3.0的GPU加速模式，能让你在移动设备上的性能提高500%的方法。现在我们把目标设定为：怎样能以同一种方式，在影片剪辑动画播放上获取更大的性能提升。你感觉性能提升4000%这个数字咋样？
+
+[![](http://blog.domlib.com/wp-content/uploads/2012/08/Fast-Rendering-in-AIR-Cached-SpiteSheet.jpg)](http://blog.domlib.com/wp-content/uploads/2012/08/Fast-Rendering-in-AIR-Cached-SpiteSheet.jpg)
+
+** **当我第一次看到这个运行结果时我都不敢相信自己的眼睛...我的IPad2竟然跑赢了我3.2Ghz的四核台式机CPU，并且是接近两倍的性能！欢迎来到移动设备GPU加速的世界...<!-- more -->
+
+** **如果您还没有阅读过之前的那篇文章，简单介绍下将会帮助您明确我们下面用到的技术是什么。总结一下就是：首先，最基本的是要为每种素材(导出类或者嵌入素材)使用单一的bitmapData实例。我们将bitmapData缓存在类静态属性上，然后这个素材类的所有实例都将共享同一个bitmapData数据。
+
+** **以下代码最简洁地表达了它的形式：
+
+    
+    [as3]
+    public class MyClass {
+        protected static var cache:bitmapData;
+    
+        public function MyClass(){
+            if(!cache){ cache = createCache(); } //这将只会运行一次.
+            addChild(new Bitmap(cache)); //Bitmap包装器共享同一份bitmapData
+        }
+    }
+    [/as3]
+
+
+** **现在不同之处在于，我们要共享一个数组的bitmapData列表，而不是单一的bitmapData。再认真读一遍这句话的意思。好的，我们还要缓存下frameLabels数据，这样就可以使用gotoAndPlay()方法了。
+
+** **现在实际上就有好几种实现方案了。你可以使用事先导出的PNG的位图序列，或者在运行时通过draw()和gotoAndPlay()方法动态地缓存影片剪辑的每一帧。两种方式各有利弊，但是为了简单起见，我将采用PNG位图序列实现的方式。
+
+**第一步：把MovieClip转换为SpriteSheet**
+
+** **第一步是要确定你的哪些素材要转换为SpriteSheet。任何重复出现的或者长时间在屏幕上呈现的素材，应该转换为SpriteSheet。而对于那些只短暂显示的，或只有一个实例的素材，你可以直接让普通的方式去渲染它。 这就是GPU渲染模式的好处之一，并不是所有素材都需要缓存为位图。你可以有很多方式取巧（比如直接嵌入导出的动画素材库），你只要优化重要的部分即可。
+
+** **注意：在GPU渲染模式下调用Transfroms的相关变换，性能是极其高的，所以如果你只是缩放，旋转或者移动显示对象，是没必要将它的变换过程转换为SpriteSheet的，直接用Tween操作它即可。虽然会稍微慢一点，但是你可以为GPU节省一大块的内存（想想当年用copyPixels()方法的时候，你必须要提前绘制好素材旋转的每个角度，才能让它运行的非常快，现在是不是不蛋疼了？哈哈~）
+
+** **一旦决定了哪些动画素材需要被加速，你就需要将它们转换PNG位图序列了。我们将使用来自gskinner.com的一个小工具Zoe来导出。Zoe会读取一个swf文件，并将它的每一帧都输出为PNG位图。它还将检索时间轴上所有标签，并存储信息到json文件里。
+
+** **接下来要做的步骤如下：
+
+** **将你的动画导入FLA文件里，并储存这个FLA到某个位置，然后导出SWF文件。
+
+** **下载并安装Zoe：：[http://easeljs.com/zoe.html ](http://easeljs.com/zoe.html )
+
+** **在Zoe里打开你刚刚导出的SWF文件，Zoe会自动检测边界，点击“Export”即可。
+[![](http://blog.domlib.com/wp-content/uploads/2012/08/zoeScreen.png)](http://blog.domlib.com/wp-content/uploads/2012/08/zoeScreen.png)
+
+** **注意：Zoe是通过测量主时间轴来确定你的SpriteSheet中一共有多少帧。如果你把动画嵌套在一个影片剪辑里是可以的，但是要确保你的主时间轴帧长度要足够包含影片剪辑里的帧长度。
+
+** **如果一切顺利的话，你现在应该能在素材目录得到一个JSON文件和PNG文件了。转向第二步：
+
+**第二步:在Flash中以非常非常高的性能播放SpriteSheet**
+
+** **下一步是加载JSON和PNG文件到Flash里，循环播放它们。然后，我们希望确保所每个特定动画的所有实例都在内存中共享同一份SpriteSheet。正是这个能给我们带来完全的GPU加速。
+
+** **嵌入JSON和Bitmap非常简单：
+
+    
+    [as3]
+    [Embed("assets/Animation.png")]
+    public var AnimationImage:Class;
+    
+    [Embed("assets/Animation.json", mimeType="application/octet-stream")]
+    public var AnimationData:Class;
+    [/as3]
+
+
+** **接下来你需要一个类来操作这些对象，然后想办法播放它们。必不可少的一步是分析Zoe导出的JSON文件，然后从大位图里裁剪出校位图序列。你还需要设计一个API来播放这些帧序列，用每帧切换位图的方法，作为你MovieClip的基本API。
+
+** **我写了一个简单的类来辅助实现这个功能，命名为SpriteSheetClip.
+
+    
+    [as3]
+    //传入从Zoe导出的数据...
+    var mc:SpriteSheetClip = new SpriteSheetClip(AnimationImage, AnimationData);
+    mc.gotoAndPlay("someLabel");
+    addChild(mc);
+    
+    //为了最大化性能，所有缓存的Sprite都必须要手动触发播放
+    function onEnterFrame(event:Event):void {
+          cachedAnimation.step();
+    }
+    [/as3]
+
+
+** **SpriteSheetClip直接继承于Bitmap，并模拟了MovieClip的接口，完整的整个类就不过一遍了，下面代码的核心功能是缓存并裁切传入的SpriteSheet。注意下这两部分：怎么通过JSON数据获得帧宽度与帧高度和利用getQualifiedClassName()方法获取素材的唯一标识符。剩下的都是简单的循环了。
+
+    
+    [as3]
+    public static var frameCacheByAsset:Object = {};
+    
+    public function SpriteSheetClip(bitmapAsset:Class, jsonAsset:Class){
+    
+    _currentStartFrame = 1;
+    var assetName:String = getQualifiedClassName(bitmapAsset);
+    //如果已经存在缓存数据就直接使用它，位图数据很可能已经存在于GPU了。
+    if(frameCacheByAsset[assetName]){
+    	frameCache = frameCacheByAsset[assetName].frames;
+    	frameLabels = frameCacheByAsset[assetName].labels;
+    
+    	_frameWidth = frameCache[0].width;
+    	_frameHeight = frameCache[0].height;
+    }
+    //如果没有缓存过，从bitmap里剪切出帧序列并且转换JSON字符串为对象
+    else {
+    	//rip clip!
+    	var data:Object = JSON.parse(new jsonAsset().toString());
+    	var bitmap:Bitmap = new bitmapAsset();
+    	var spriteSheet:BitmapData = bitmap.bitmapData;
+    
+    	_frameWidth = data.frames.width;
+    	_frameHeight = data.frames.height;
+    
+    	frameLabels = data.animations;
+    
+    	var cols:int = spriteSheet.width/_frameWidth|0;
+    	var rows:int = spriteSheet.height/_frameHeight|0;
+    	var p:Point = new Point();
+    
+    	var l:int = cols * rows;
+    	frameCache = [];
+    
+    	_currentStartFrame = 1;
+    
+    	var m:Matrix = new Matrix();
+    
+    	//遍历所有帧...
+    	for(var i:int = 0; i < l; i++){
+    		var col:int = i%cols;
+    		var row:int = i/cols|0;
+    
+    		m.identity(); //Reset matrix
+    		m.tx = -_frameWidth * col;
+    		m.ty = -_frameHeight * row;
+    		//绘制每一帧并缓存它
+    		var bmpData:BitmapData = new BitmapData(_frameWidth, _frameHeight, true, 0x0);
+    		bmpData.draw(spriteSheet, m, null, null, null, true);
+    		frameCache[i] = bmpData;
+    	}
+    
+    	_currentEndFrame = i;
+    	numFrames = _currentEndFrame;
+    
+    	_frameWidth *= scale;
+    	_frameHeight *= scale;
+    
+    	//添加帧数据到静态缓存
+    	frameCacheByAsset[assetName] = {
+    		frames: frameCache, //Cache bitmapData's
+    		labels: frameLabels //Cache frameLabels
+    	};
+    }
+    //显示第一帧Show frame 1
+    this.bitmapData = frameCache[_currentStartFrame-1];
+    
+    }
+    [/as3]
+
+
+** **现在，利用这个类，我们能创建同一个动画的多个副本，然后以非常高的性能运行它们。你能够同屏播放100个动画，甚至在最古老的Android设备上。而在较新一些的设备比如IPad2或者Galaxy Nexus，你可以一次跑满500至800个动画。并且缩放，调整透明度，旋转这些操作性能都非常高。
+
+** **也许你在代码里注意到了，出于性能考虑，我的类并不自己实现更新操作。所以如果你调用play()方法什么也不会发生。我让父级对象来负责统一调用它所有的子项的step()方法，来代替在子项上添加一系列的EnterFrame事件监听，这样一个事件监听就可以代替上百个。
+
+** **从帧管理功能上来说，这个类仍然还有挺多东西需要完善，如果需要的可以的话可以从附件源码里检出看看。事先声明，代码有一点小bug。我认为这只是一个示例参考而不是能投入生产使用的代码，但是你可以随意使用。
+
+** **注：在工作流方面，一旦安装，这是相当不错的。Zoe会记住所有项目的设置，然后只需话大约10秒钟就能够完成Fla动画的更新并重新导出。
+
+** **接下来让我们运行一些基准测试，来看看我们到底能跑多少个动画...
+
+**基准测试！**
+** **在这次测试中，我将在保持帧率30fps的情况下不断添加动画数量，直到帧率下降。
+
+** **您可以下载这个Flash Builder项目自己运行一下:[MobileRenderTests.zip](http://blog.domlib.com/wp-content/uploads/2012/08/MobileRenderTests.zip)
+
+** **我将SpriteSheetClip与普通影片剪辑以及CopyPixel方案做了对比测试。测试结果令人影响深刻，SpriteSheetClip运行的动画超过了普通影片剪辑40倍，并且超过CopyPixels方案接近10倍。这比之前的所谓的Flash中“最快的”渲染方案还高出数量级的倍数。测试结果如下表：
+
+[![](http://blog.domlib.com/wp-content/uploads/2012/08/benchmarks1.jpg)](http://blog.domlib.com/wp-content/uploads/2012/08/benchmarks1.jpg)
+
+** **在这里你可以看到，即使更古老的Android设备比如Nexus One，都能获取非常不错的测试结果。在30fps的帧率下同时播放150动画的性能足够制作几乎所有的2D游戏。而对于较新的一些设备，测试结果变得令人印象非常深刻，在保持30fpsd的帧率下iPad 2跑满了735个动画？！
+
+** **请下载上面提供的完整Flash Builder项目源码，以便在您自己的移动设备上测试运行一下，您可以通过留言评论让我知道运行结果。
+
+**关于内存管理的一些建议**
+
+** **最后一件我非常想要强调的事就是内存管理的重要性。因为现在你正在往GPU里载入东西。你需要时刻注意内存的使用。一旦你填满了GPU的内存，它将会强制切换图像纹理数据。如果这个持续发生，它将严重影响你的GPU性能。
+
+** **这里有一点主要的改变是需要你注意的。这点即使你最终迁移到使用Stage3D也是要注意的。所有被渲染的对象都是一个图像纹理，而刷新纹理的性能消耗是巨大的。你必须清楚明白这个概念，然后以一个聪明的方式专注于管理你的纹理（也就是BitmapData）
+
+** **好吧，我们只有有限的内存，但到底多有限呢？我曾看到过对于IOS设备的推荐纹理内存大小是24MB,这对于一个32位的PNG图片来说，结果就是4096x4096像素的一张大位图（我猜是这样）。所以，如果你能把当前场景用到的所有的bitmapData都填充到这张大位图里，并不超过4096x4096。你的程序应该能轻松运行在所有IOS设备上。
+
+** **现在，你可能还注意到一些更古老的Android设备有甚至更低的内存使用限制。所以你要尽可能保持最低的内存占用。
+
+** **尽力去不断优化你的图像纹理管理，这可能是一个会影响到你渲染性能的最大因素。如果你将花一些时间去优化你的应用，值得你花时间去优化的最大的地方就是最小化你的纹理内存占用。你可以这么做，使用网格重复的图像，或者在组件之间共享位图数据。
+
+** **我在写SnowBomber游戏时，应用的一个技巧是根据设备来缩放我的缓存数据。为了让游戏能运行在GPU非常弱的Nexus One上，我把bitmapData都缩放到50%后再缓存它们。这让我即使在Nexus One上也达到了差不多25fps的帧率，这点在之前我是完全无法想象的。这似乎过于简单了，只需在绘制时传入一个简单的matrix对象大小的即可。瞧，我这就拥有一个运行时动态调整大小的图像纹理了...
+
+**[结束语]总算是翻译完了，译的不太好哈，但文章确实是好文章，如果英语没压力还是建议看看原文[/结束语]**

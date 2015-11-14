@@ -1,0 +1,164 @@
+---
+author: dom
+comments: true
+date: 2012-12-16 15:08:12+00:00
+layout: post
+slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e4%ba%8c%e5%a4%b1%e6%95%88%e9%aa%8c%e8%af%81%e6%9c%ba%e5%88%b6%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b8%83%e5%b1%80
+title: FlexLite框架解读(二):失效验证机制和自动布局
+wordpress_id: 417
+categories:
+- ActionScript
+- Flash
+- FLEX
+- FlexLite
+- UI框架
+tags:
+- FlexLite
+- 失效验证
+- 框架解读
+- 自动布局
+---
+
+接上一篇文章内容，这次的主题是自动布局。很多纯AS程序员过渡到Flex/FlexLite时，最困惑的地方就是自动布局，而且困惑的时间会非常长。这是个看起来很便捷的功能，要是不得要领的话，布局出了问题，调试都无从下手。不仅是AS程序员，相信即使部分熟练使用Flex的程序员，也只是停留在用的层面，只知道它用起来非常方便，却并不了解内部的真正运行机制，调试起来还是力不从心。本文将详细过一遍自动布局的相关底层原理。希望对你有所帮助 :)
+
+要讲解自动布局，还必须要先说一个东西：失效验证机制。因为这个是自动布局实现高性能的基石，并且贯穿于所有UI组件之中，你在源码里随处可见。是它为整个框架带来了极大的性能提升。理解这个内容，也有助于扩展自定义的UI组件。这次所讲的内容，在Flex和FlexLite是完全一致的，所以以下就不特意区分，统称框架。
+
+**失效验证机制**
+
+失效验证简单说就是一种延迟应用改变的措施。举个简单的例子：如果我们要给一个Sprite绘制背景。我们复写（override）它的width和height属性，当尺寸发生改变是，重新绘制一个矩形背景。正常情况下，当我们分别修改width和height时，组件会执行2次背景重绘。如果我们在一个for循环里不断改变尺寸，改变多少次就立即绘制多少次。而失效验证的情况下，当尺寸发生改变时，它只是用一个变量标记下尺寸发生了改变，然后在下一帧检查这个变量再统一重绘。所以无论你改变了尺寸多少次，都只重绘1次。<!-- more -->
+
+试想下把这个机制运用到方方面面，尤其是大计算量的地方，带来的性能优化是非常显著的。所以在框架里设计了一个LayoutManager来专门负责管理失效验证。LayoutManager和UIComponent相当于是定了一个契约，在需要延迟验证的属性发生改变时，UIComponent先标记下这个变化的属性，然后把自己注册到LayoutManager上，让它在下一帧回调自己的某个方法来集中处理这些变化的属性。把上面的例子用代码简单表示如下:
+
+    
+    [as3]
+    package
+    {
+    	import flash.display.Sprite;	
+    	import org.flexlite.domUI.core.DomGlobals;
+    
+    	public class UIComponent extends Sprite
+    	{
+    		public function UIComponent()
+    		{
+    			super();
+    		}
+    
+    		/**
+    		 * 尺寸改变标记
+    		 */		
+    		private var sizeChanged:Boolean = false;
+    
+    		private var _width:Number;
+    		/**
+    		 * 组件宽度
+    		 */		
+    		override public function get width():Number
+    		{
+    			return _width;
+    		}
+    		override public function set width(value:Number):void
+    		{
+    			if(_width==value)
+    				return;
+    			_width = value;
+    			sizeChanged = true;
+    			//不直接调用redrawBackground()而是调用invalidateProperties()标记下一帧需要验证属性。
+    			invalidateProperties();
+    		}
+    
+    		private var _height:Number;
+    		/**
+    		 * 组件宽度
+    		 */		
+    		override public function get height():Number
+    		{
+    			return _height;
+    		}
+    		override public function set height(value:Number):void
+    		{
+    			if(_height==value)
+    				return;
+    			_height = value;
+    			sizeChanged = true;
+    			invalidateProperties();
+    		}
+    
+    		private var invalidatePropertiesFlag:Boolean = false;
+    		/**
+    		 * 标记有属性发生改变，需要延迟验证
+    		 */		
+    		public function invalidateProperties():void
+    		{
+    			if (!invalidatePropertiesFlag)
+    			{
+    				invalidatePropertiesFlag = true;
+    				//把自己注册到LayoutManager上
+    				DomGlobals.layoutManager.invalidateProperties(this);
+    			}
+    		}
+    		/**
+    		 * 如果标记过属性需要延迟验证，在下一帧LayoutManager会回调这个方法
+    		 */
+    		public function validateProperties():void
+    		{
+    			if (invalidatePropertiesFlag)
+    			{
+    				commitProperties();
+    
+    				invalidatePropertiesFlag = false;
+    			}
+    		}
+    
+    		/**
+    		 * 提交属性，子类在调用完invalidateProperties()方法后，应覆盖此方法以应用属性
+    		 */		
+    		protected function commitProperties():void
+    		{
+    			if(sizeChanged)
+    			{
+    				sizeChanged = false;
+    				redrawBackground();
+    			}
+    
+    		}
+    		/**
+    		 * 重绘背景
+    		 */		
+    		private function redrawBackground():void
+    		{
+    			//do something...
+    		}
+    	}
+    }
+    [/as3]
+
+
+简单起见，这里我们先不解释LayoutManager是怎么工作的(请自行查看源码)，只要记着它的作用即可：你在它上面注册一下，它就会延迟一帧回调你的方法。invalidateProperties()和validateProperties()就是这样的一对方法。因为validateProperties()是public方法，所以有可能在LayoutManager回调它之前，它已经被其他地方调用过一次了。所以多了个protected的commitProperties()方法。来确保回调只会被执行一次。所以对于UIComponent来说，你只需要关注invalidateProperties()和commitProperties()这一对方法。固定的流程就是这样：当属性发生改变时，调用invalidateProperties()标记属性发生了改变。然后在commitProperties()里写上对应的改变应该做些什么事。这就达到延迟验证的目的了，如果需要，还能按照固定的顺序来验证。很简单吧？失效验证机制就是这样，用invalidateProperties()来标记失效，然后用commitProperties()来延迟验证。
+
+如果看过框架的源码，细心的童鞋肯定会发现随处可见的不止invalidateProperties()和commitProperties()这一对方法。还有另外两对，我们马上就说到了。
+
+另外两对方法分别是："测量延迟验证"和"布局延迟验证"。理解了上面的"属性延迟验证"后，剩下的两对就很好理解了,因为原理是一模一样的，只是作用更加专一，它们是专门为自动布局设计的延迟验证。同上，我们先要确定关注的一对方法是什么。"测量延迟验证"是invalidateSize()和measure()方法，"布局延迟验证"是invalidateProperties()和updateDisplayList()。运行过程还是一样：调用invalidate开头的方法，对应后面的那个方法就会在下一帧被执行。invalidate方法没什么好解释的了，下面我们来看看measure()和updateDisplayList()方法，这也就进入"自动布局"的部分了。
+
+**自动布局**
+
+在说自动布局前，首先要澄清一个很重要的概念。这个概念让从Flex转到纯AS开发或反过来的人都困惑不已。就是height和width。在纯AS里和框架里它们是不一样的概念。
+
+对于纯AS开发者来说，我们很熟悉这两个属性。在Flash原生显示对象里，它们和scale属性是绑定在一起的。修改width会导致scaleX改变，反之亦然。height同理。这个其实很别扭，简单了说就是，你其实是没法指定一个显示对象的尺寸的，height和width只是scale在某个倍数时的具体计算结果。scale等于1时的height和width是根据子对象的可视区域或者自身绘图区域决定的。所以在原始显示对象里，尺寸更像是一个只读属性。你所能做的只是改变它的缩放倍数。
+
+而在框架里，你去查看UI基类UIComponent的源码，会发现width和height是被复写过的，用了自定义的_width和_height私有属性来记录你设置的尺寸。框架里分离了它们和scale的绑定关系。你要设置缩放值时就去设置scale，不会影响到尺寸。你修改尺寸的时候也不会影响缩放值。最终显示到屏幕上的尺寸结果是：显示设置的尺寸*缩放值。它们之间一点关系也没有了。这里的尺寸更像是个期望值。拿最开始的那个绘制背景的例子举例。如果有个100*100的蓝色背景容器，你要在不缩放情况下把它变成400*300。在框架里，你直接设置尺寸为400*300即可。框架里的组件会根据你的期望尺寸，自动为你执行了重绘操作。而在原生显示对象里，你必须要自己动手重绘一个400*300的背景才行。否则你直接设置它的尺寸，背景是变成你要的大小了，但是子对象也全部变形了。
+
+知道了框架里的尺寸和缩放值是分离的之后，我们再来看前面的measure()和updateDisplayList()方法。它们从字面上看就是测量和更新显示列表。测量这个操作，其实就是弥补尺寸和缩放分离后带来的问题：分离之后，width和height完全依赖外部显示设置，如果你不设置的话，它们就一直是0了。那你如何知道现在这个容器应该是多大？所以有了测量这个方法。记住这个结论：**当你显式设置组件尺寸时，就按照你设置的尺寸。如果没有，它就会帮你测量一个可以放下所有子项的最合适尺寸。** measure()正是负责测量的这个操作。对这个规则的理解在调试时非常重要。请务必反复确认你已经理解了它。它让显示列表表现的像弹簧一样。如果一个组件的尺寸显示错了。先看它是否被显式设置了错的尺寸(explicitWidth,explicitHeight不是NaN)。如果不是，那就是测量的结果错了。而测量结果是根据子项的尺寸和位置决定的。然后你继续按照这个规则分析子项，以及子项的子项，直到找到根源。
+
+上面的结论告诉我们，无论如何，组件都会有个尺寸(当然，前提是你的组件里有正确的measure()方法)。那我们就可以根据这个尺寸对子项布局了。updateDisplayList()就是执行这个布局的操作。根据显式设置的或者测量出来的尺寸。对子项的位置和尺寸进行修改。这部分没什么好说的，就是遍历子对象，根据它的各种属性(top,left,right...)，给他们重新设置位置和尺寸。到此为止，我们已经介绍完了著名的的三阶段失效验证机制。但为了得到正确的布局结果和防止重复验证，显然还需要对失效验证的顺序规范一下才行。下面一张图很好的说明了这三个阶段在显示列表里是如何进行的：
+
+[![三阶段布局](http://blog.domlib.com/wp-content/uploads/2012/12/layout.jpg)](http://blog.domlib.com/wp-content/uploads/2012/12/layout.jpg)
+
+**[图片已经更新，之前的属性提交阶段方向画反了，具体看评论]**
+
+如图，在显示列表里，首先由外向内执行一遍组件的commitProperties()方法，然后再由内向外执行一遍measure()方法(被显式设置了尺寸的组件会跳过测量阶段，参考validateSize()方法代码)，最后由外向内执行一遍updateDisplayList()方法。这整个过程都在LayoutManager里完成。你只管向它注册自己即可(调用invalidate开头的方法)。它会在下一帧统一排序后逐个回调组件的对应方法。这样无数个周期循环进行下去，组件始终以很高的性能保持在正确的尺寸和相对位置上。而对我们使用者来说，要写的代码却变得非常非常少。 :)
+
+如果你扩展了自定义的UI组件，想要加入自动布局的功能，只需要复写measure()和updateDisplayList()方法即可。其实各种各样的布局功能，也真是通过复写这两个方法来实现的。具体可以参考layouts包下面的布局类：BasicLayout,HorizontalLayout,VercticalLayout,TileLayout。
+
+本想在结尾把所有布局相关的属性都过一遍的，但是写了一半发现写不下去了，这些东西要么API文档里有，要么牵扯到其他的内容。其实不管多么详细的教程，都比不上你自己去翻看源码来的直接快速。我还是把这篇文章当做抛砖引玉的作用吧，已经对整体的架构介绍的差不多了，希望能对你阅读源码会有所帮助，起码下次看到一排的measure()和updateDisplayList()不会无从下手了吧？ :)
+
+[返回FlexLite相关文章目录](http://blog.domlib.com/uiframework)

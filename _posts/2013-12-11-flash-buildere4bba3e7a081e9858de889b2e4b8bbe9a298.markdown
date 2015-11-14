@@ -1,0 +1,24 @@
+---
+author: dom
+comments: true
+date: 2013-12-11 15:16:18+00:00
+layout: post
+slug: flash-builder%e4%bb%a3%e7%a0%81%e9%85%8d%e8%89%b2%e4%b8%bb%e9%a2%98
+title: Flash Builder代码配色主题
+wordpress_id: 626
+categories:
+- Flash
+- 个人日志
+tags:
+- Flash Builder
+- 主题
+- 配色
+---
+
+分享一个自己用的Flash Builder配色主题：[theme_domlib.zip](http://blog.domlib.com/wp-content/uploads/2013/12/theme_domlib.zip)，大号字体，深色背景，写代码不伤眼 :)
+
+效果图如下：
+
+[![theme_dom](http://blog.domlib.com/wp-content/uploads/2013/12/theme_dom1.jpg)](http://blog.domlib.com/wp-content/uploads/2013/12/theme_dom1.jpg)
+
+同时支持Flash Builder4.6和4.7，使用方法很简单，点击"菜单"-->"导入"打开窗口后选择"首选项",接着按提示导入即可。

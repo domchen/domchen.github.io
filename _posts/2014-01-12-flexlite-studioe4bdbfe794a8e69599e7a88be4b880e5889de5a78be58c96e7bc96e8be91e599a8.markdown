@@ -1,0 +1,72 @@
+---
+author: dom
+comments: true
+date: 2014-01-12 14:23:50+00:00
+layout: post
+slug: flexlite-studio%e4%bd%bf%e7%94%a8%e6%95%99%e7%a8%8b%e4%b8%80%e5%88%9d%e5%a7%8b%e5%8c%96%e7%bc%96%e8%be%91%e5%99%a8
+title: FlexLite Studio使用教程(一):编辑器初始化
+wordpress_id: 639
+categories:
+- ActionScript
+- Flash
+- FlexLite
+- UI框架
+tags:
+- FlexLite
+- FlexLite Studio
+- 初始化
+---
+
+自从FlexLite Studio(以下简称FS)发布后，一直被催着出教程。年底了有点忙，抱歉现在才开始写。由于内容比较多，预计会有很多篇，这是FS系列教程的第一篇。我想肯定有同学会问为什么不先出视频教程。总体来说，我认为看视频教程比较浪费时间。视频是种被动接受知识的方式(我已经在脑补你吃着薯片看我一行一行敲代码的情景)，不像文章可以强调重点，30分钟的视频你无法知道那块内容可以跳过。图文教程可能10分钟就能看完的内容，视频教程估计半小时都不一定能解释清楚。但是视频教程也有优点，就是在演示软件操作流程时比较准确。所以如果有文字解释不清楚的地方，我会附上视频操作演示。至于一行一行敲代码给你看的过程，就免了吧，浪费大家的时间。
+
+好了，下面进入正题。
+
+**一.FS如何跟纯AS项目协作**
+
+实际上，AS项目完全不关心是否有FS的存在。FlexLite框架引入的皮肤分离机制（参考[FlexLite框架解读(一)](http://blog.domlib.com/articles/407.html)），就是起到皮肤与逻辑彻底解耦的作用。皮肤也是一个AS类。至于这个皮肤类是你手写的，还是自动生成的，AS项目是不关心的，你只需要在逻辑类上引用这个皮肤类即可。所以，你还是按照你熟悉的方式开发AS项目，只是现在皮肤的AS文件改成由FS帮你生成了。<!-- more -->
+
+这里说下与Flex的可视化有区别的地方，在Flex里，是允许MXML内嵌入AS代码混合编辑的。这样看起来很方便，其实自相矛盾了，因为它跟皮肤分离机制完全背离了。它现在既是逻辑组件又是皮肤，跟原先的开发方式毫无区别，皮肤分离的优点全不在，那何必引入一个新的工作流？所以，FS只干一件事：编辑并生成皮肤的AS文件。而逻辑代码一定是在纯AS项目中写的。
+
+**二.导入目标AS工程**
+
+这里我们以FlexLiteTest工程为例（[检出地址](http://wiki.flexlite.org/index.php?doc-view-61)），首次启动FS时，“配置项目属性”窗口将会自动弹出，你也可以通过点击菜单栏“文件”->“项目属性”来打开它：
+
+[![配置项目属性](http://blog.domlib.com/wp-content/uploads/2014/01/FS_project.png)](http://blog.domlib.com/wp-content/uploads/2014/01/FS_project.png)
+
+
+
+配置完这个窗口的属性，FS就会帮你初始化目标AS工程。下面分别解释这个窗口的每个设置项的含义：
+
+1.工程路径：很好理解，就是目标AS工程的路径。这里注意下选到工程名（FlexLiteTest）这一级就行了，不用选到src。理论上我们设置了这个之后，就可以编辑皮肤并输出AS皮肤文件到目标工程了。但是如果我们的皮肤还用到了需要外部加载的素材资源，就需要配置接下来的几项，确保素材资源能发布到目标工程内，供项目加载显示。
+
+2.发布路径：FS会把皮肤引用的素材资源增量地发布到这个目录下，供项目加载显示。
+
+3.加载方式：使用或不使用Dll加载库。区别在于：使用Dll加载库的话，FS除了拷贝资源到“发布路径”下，还会自动帮你修改Dll的配置文件。不使用Dll库时，FS只会把素材资源拷贝到“发布路径”，你需要自己手动去加载这些资源并显示出来。Dll是FlexLite框架内原生提供的一套资源加载库。(关于Dll的使用可以参考：[Dll资源管理器](http://wiki.flexlite.org/index.php?doc-view-63)和FlexLiteTest内的DllTest测试例子）。如果你的项目里没有使用Dll加载库，选择“使用自定义资源加载库”，配置也就到此结束了。接下来的三项全是配置Dll的属性。
+
+4.Dll配置：Dll配置文件的路径。这个配置文件如果目标项目里还没有，可以手动写一个或者用DllTool（在[Dll资源管理器](http://wiki.flexlite.org/index.php?doc-view-63)页面内下载）生成一个。
+
+5.相对路径：Dll配置文件中裁剪url使用的资源根路径，也就是在DllTool中显示的那个“相对路径”。举个例子：有个资源文件在你本地的绝对路径是:"D:/FlexLiteTest/src/resouce/ui/a.swf",而Dll配置中存储的url是“ui/a.swf”，所以这里你要选到“D:/FlexLiteTest/src/resouce/”这一级，告诉FS在填写配置的时候，裁剪到这个位置。
+
+6.资源组名：FS修改Dll配置时，新增的资源项要加入到哪个资源组内。通常都是创建一个uigroup，专门放置ui引用的素材资源。关于资源组的解释，参考[Dll资源管理器](http://wiki.flexlite.org/index.php?doc-view-63)。
+
+全部配置完成后，FS就可以正常使用了。但是目标AS工程还需要写一些初始化的代码。主要是正确引用FlexLite框架和Dll库的初始化，这部分就不贴代码了，比较简单，大家可以直接参考FlexLiteTest工程中的DxmlTest测试例子。这里我们要说一下，之前在[FlexLite框架解读(三)](http://blog.domlib.com/articles/433.html)中提到过的SkinAdapter。因为Dll是可选库，这里要让UIAsset直接显示Dll管理的素材，就可以通过注入自定义的SkinAdapter在他们之间做一个桥接。具体的代码参考FlexLiteTest中的SkinAdapter类。
+
+**三.目标AS工程目录结构**
+
+在配置完上面的窗口后，FS就初始化完毕，可以开始编辑皮肤了。在这之前，先让我们来看下FS在目标AS工程里都做了什么修改。还是以FlexLiteTest为例，配置完成后，FS在FlexLiteTest目录下创建了两个文件夹：dxml和project。
+
+[![FS_folder](http://blog.domlib.com/wp-content/uploads/2014/01/FS_folder.jpg)](http://blog.domlib.com/wp-content/uploads/2014/01/FS_folder.jpg)
+
+
+
+dxml目录存放的是DXML皮肤文件，其中的文件夹结构与src中的包结构一一对应。例如有一个文件："FlexLiteTest/dxml/org/flexlite/skins/ButtonSkin.dxml"，那么FS就会自动生成一个"FlexLiteTest/src/org/flexlite/skins/ButtonSkin.as"。
+
+project目录存放的是FS的配置文件，其中“project/congfig/project.xml”存储的就是之前“配置项目属性”窗口里设置的内容。
+
+project/resource/存放的是FS管理的素材资源文件。这里要特别说明下，FS单独管理一套素材资源，并不直接读取目标工程的资源目录。因为通常我们需要导入一些额外的素材到FS，只是为了摆位置，并不希望发布到目标项目中。另外，FS的素材支持位图化，所以可能同时存在矢量和位图两个版本。显然目标项目里只需要引用其中之一。最后一点，FS发布SWF素材时会检查舞台是否空，不为空会帮你清空，确保发布到项目中的素材是干净的。
+
+这次的教程就到此结束了。被提问很多的还有素材资源管理的问题，我会在下一篇教程《[FlexLite Studio使用教程(二):管理素材资源](http://blog.domlib.com/articles/650.html)》中说明。
+
+
+
+

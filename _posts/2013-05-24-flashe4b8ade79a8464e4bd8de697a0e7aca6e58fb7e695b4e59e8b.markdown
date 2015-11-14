@@ -1,0 +1,216 @@
+---
+author: dom
+comments: true
+date: 2013-05-24 05:25:10+00:00
+layout: post
+slug: flash%e4%b8%ad%e7%9a%8464%e4%bd%8d%e6%97%a0%e7%ac%a6%e5%8f%b7%e6%95%b4%e5%9e%8b
+title: Flash中64位无符号整型的实现方法
+wordpress_id: 485
+categories:
+- ActionScript
+- Flash
+- 游戏开发
+- 编程理论
+tags:
+- 64位无符号整型
+- flash
+- uint64
+- 后端通信
+---
+
+跟后端socket通信经常会用到64位的无符号整型uint，通常用来表示用户id。但是Flash中的uint是32位的，Number也只能存储到53位。所以会存在溢出的可能。有两种解决方案，一种是让后端把id都存储成字符串。另一种是前端实现一个能够读取uint64的类。因为后端的大爷们通常不会接受字符串的方式。所以我们发扬下精神，写个类来兼容他们发过来的uint64吧。网上通常流传的一种实现思路是用Number来伪造uint64，当传过来的ID值小于53位时是没问题，但是大于的时候就会溢出了。这里我们说一种字符串的实现思路，是真正的64位数据，所以不会有溢出的可能。<!-- more -->
+
+    
+    [as3]
+    package org.flexlite.domUtils
+    {
+    	import flash.utils.ByteArray;
+    	import flash.utils.Endian;
+    
+    	/**
+    	 * 64位无符号整数
+    	 * @author DOM
+    	 */
+    	public class Uint64
+    	{
+    		/**
+    		 * 构造函数
+    		 * @param lowerUint 低32位整型数字
+    		 * @param higherUint 高32位整型数字
+    		 */		
+    		public function Uint64(lowerUint:uint=0,higherUint:uint=0)
+    		{
+    			_lowerUint = lowerUint;
+    			_higherUint = higherUint;
+    		}
+    
+    		private var _higherUint:uint = 0;
+    		/**
+    		 * 高32位整型数字
+    		 */
+    		public function get higherUint():uint
+    		{
+    			return _higherUint;
+    		}
+    		public function set higherUint(value:uint):void
+    		{
+    			if(_higherUint==value)
+    				return;
+    			_higherUint = value;
+    			cacheBytes = null;
+    			cacheString = [];
+    		}
+    
+    		private var _lowerUint:uint = 0;
+    		/**
+    		 * 低32位整型数字
+    		 */
+    		public function get lowerUint():uint
+    		{
+    			return _lowerUint;
+    		}
+    		public function set lowerUint(value:uint):void
+    		{
+    			_lowerUint = value;
+    			if(_lowerUint==value)
+    				return;
+    			cacheBytes = null;
+    			cacheString = [];
+    		}
+    
+    		/**
+    		 * 从字符串生成数字
+    		 * @param value 要转换为数字的字符串。
+    		 * @param radix 要用于字符串到数字的转换的基数（从 2 到 36）。如果未指定 radix 参数，则默认值为 10。
+    		 */		
+    		public function fromString(value:String,radix:uint=10):void
+    		{
+    			if(!value)
+    			{
+    				reset();
+    				return;
+    			}
+    			value = value.toLowerCase();
+    			var div:Number = 4294967296;
+    			var low:Number = 0;
+    			var high:Number = 0;
+    			for(var i:int=0;i<value.length;i++) 			{ 				var num:int = value.charCodeAt(i)-48; 				if(num>9)
+    					num -= 39;
+    				low = low*radix+num;
+    				high = high*radix+int(low/div);
+    				low = low%div;
+    			}
+    			this._lowerUint = low;
+    			this._higherUint = high;
+    			cacheString = [];
+    			cacheString[radix] = value;
+    			cacheBytes = null;
+    		}
+    		/**
+    		 * 从字节流数组中读取uint64数字
+    		 * @param bytes 包含64位无符号整型的字节流
+    		 * @param postion 要从字节流中开始读取的偏移量
+    		 */		
+    		public function fromBytes(bytes:ByteArray,postion:uint=0):void
+    		{
+    			try
+    			{
+    				bytes.position = postion;
+    				if(bytes.endian==Endian.LITTLE_ENDIAN)
+    				{
+    					_lowerUint = bytes.readUnsignedInt();
+    					_higherUint = bytes.readUnsignedInt();
+    				}
+    				else
+    				{
+    					_higherUint = bytes.readUnsignedInt();
+    					_lowerUint = bytes.readUnsignedInt();
+    				}
+    			}
+    			catch(e:Error)
+    			{
+    				reset();
+    				return;
+    			}
+    			cacheBytes = null;
+    			cacheString = [];
+    		}
+    		/**
+    		 * 重置为0
+    		 */		
+    		private function reset():void
+    		{
+    			_higherUint = 0;
+    			_lowerUint = 0;
+    			cacheBytes = null
+    			cacheString = [];
+    		}
+    		/**
+    		 * 克隆一个数字
+    		 */		
+    		public function clone():Uint64
+    		{
+    			return new Uint64(_lowerUint,_higherUint);
+    		}
+    		/**
+    		 * 缓存的字节流
+    		 */		
+    		private var cacheBytes:ByteArray;
+    		/**
+    		 * 返回数字的字节流数组形式,存储方式为Endian.LITTLE_ENDIAN。
+    		 */		
+    		public function get bytes():ByteArray
+    		{
+    			if(cacheBytes)
+    				return cacheBytes;
+    			cacheBytes = new ByteArray();
+    			cacheBytes.endian = Endian.LITTLE_ENDIAN;
+    			cacheBytes.writeUnsignedInt(_lowerUint);
+    			cacheBytes.writeUnsignedInt(_higherUint);
+    			return cacheBytes;
+    		}
+    		/**
+    		 * 缓存的字符串
+    		 */		
+    		private var cacheString:Array = [];
+    		/**
+    		 * 返回数字的字符串表示形式。
+    		 * @param radix 指定要用于数字到字符串的转换的基数（从 2 到 36）。如果未指定 radix 参数，则默认值为 10。
+    		 */		
+    		public function toString(radix:uint=10):String
+    		{
+    			if(radix<2||radix>36)
+    			{
+    				throw new RangeError("基数参数必须介于 2 到 36 之间；当前值为 "+radix+"。");
+    			}
+    			if(cacheString[radix])
+    				return cacheString[radix];
+    			var result:String="";
+    			var lowUint:uint=_lowerUint;
+    			var highUint:uint=_higherUint;
+    			var highRemain:Number;
+    			var lowRemain:Number;
+    			var tempNum:Number;
+    			var MaxLowUint:Number = Math.pow(2,32);
+    			while(highUint!=0||lowUint!=0)
+    			{
+    				highRemain=(highUint%radix);
+    				tempNum=highRemain*MaxLowUint+lowUint;
+    				lowRemain=tempNum%radix;
+    				result=lowRemain.toString(radix)+result;
+    				highUint=(highUint-highRemain)/radix;
+    				lowUint=(tempNum-lowRemain)/radix;
+    			}
+    			cacheString[radix] = result;
+    			return cacheString[radix];
+    		}
+    	}
+    }
+    [/as3]
+
+
+原理简单说就是：ByteArray是可以存储任意长度数据的，后端发过来的uint64在ByteArray里存储为两个uint，头32位也就是4字节是uint64的低32位。后面4字节是uint64的高32位。可以采用两次ByteArray.readUnsignedInt()方法分别读取低32位和高32位的数字。实际的数字大小就是lowerUint+higherUint*2^32。很显然，这个计算结果我们是没法用一个数字变量保存下来的。但我们可以用字符数组来保存结果。所以问题就归结到两个转换过程上，如何把高低位的两个uint转换成指定进制的字符串。反之如何把指定进制的字符串转换为高低位的两个uint。这样就可以通过这两个uint跟后端通信了。
+
+简单起见，我们先只考虑10进制的情况。字符串转两个uint的思路很简单。lowerUint = uint64%(2^32);higherUint = uint(uint64/(2^32));即64位整型除以2^32的整数部分是高32位，余数部分是低32位。由于不能表示64位数字，所以直接计算是不可能的。那就要用到“大数除法”了。关于这个内容，可以谷歌一下。相信计算机相关专业的上机课都做过这个题目。原理就是小学教过你的按位笔算方法。把大整数变成一位一位的数字分别计算。大数除法从高位开始计算，一位一位获得商和余数。用高地位两个uint转换成字符串，需要用到大数乘法，原理也是小学笔算。但是从低位开始计算的，一位一位相乘并进位。不同进制的计算，只要修改每次累乘的数即可。具体代码请参考上文。
+
+附上AS源文件：[Uint64.zip](http://blog.domlib.com/wp-content/uploads/2013/05/Uint64.zip)

@@ -1,0 +1,166 @@
+---
+author: dom
+comments: true
+date: 2012-07-01 07:00:00+00:00
+layout: post
+slug: air-3-0%e9%92%88%e5%af%b9%e7%a7%bb%e5%8a%a8%e8%ae%be%e5%a4%87%e7%9a%84%e9%ab%98%e6%80%a7%e8%83%bd%e6%b8%b2%e6%9f%93%e6%96%b9%e6%a1%88%e4%b8%80
+title: AIR 3.0针对移动设备的高性能渲染方案(一)[译]
+wordpress_id: 242
+categories:
+- ActionScript
+- AIR
+- Flash
+- UI框架
+- 游戏开发
+tags:
+- AIR3.0
+- GPU加速
+- 性能优化
+- 游戏
+- 移动开发
+---
+
+<blockquote>现在基于Stage3D的2D框架非常热门，但是事实上Stage3D API加速的不仅是3D应用，对传统的Bitmap显示对象也进行了大幅度的优化。如果仅是开发2D应用，其实不必舍近求远去使用那些2D框架。这篇无意中看到的外文博客，提供了一种既简单又高效的优化方案。翻译一下，共享出来。原文链接：[Fast rendering in AIR 3.0 (iOS & Android)](http://esdot.ca/site/2011/fast-rendering-in-air-3-0-ios-android) 以下是译文：</blockquote>
+
+
+
+
+**      **当我们一边正在等待Stage3D的发布时，很多开发者似乎还停留在这个印象中：即使AIR 3.0也无法在移动设备上开发出高性能的游戏。
+
+**      **而事实上，只需要做一点点的工作，高性能的GPU加速功能已经为我们敞开了大门！
+
+**      **在这片文章中，我将为您展示跟传统显示列表编程方式相比，能提升5倍以上的性能的优化方案。最终成果将会是一个用IOS5硬件加速的性能更高的渲染引擎(这点在后文跟进…)。<!-- more -->
+
+**本文说的啥**
+
+**      **  Adobe的工程师们在为AIR3.0重新设计GPU渲染模式的任务中做了出色的工作。现在我们开发者只需做很少量的工作，就可以从这些小小的移动设备上哄骗出超乎想象的性能。那么，我们到底需要做些什么呢?
+
+1.在你的app.xml配置文件里找到节点并设置成这样：<renderMode>gpu</renderMode>
+
+2.尽可能地使用位图来呈现你的显示对象
+
+3.在类或应用程序之间缓存共享你的bitmapData
+
+**      **这看起来是不是有点太简单了？但是请相信我，它绝对不坑爹 。![微笑](http://blog.domlib.com/wp-content/uploads/2012/06/wlEmoticon-smile.png) Bitmap()这个类现在就是被出奇地优化了。在此夸奖一下整个AIR3.0团队，做出了如此惊人的一步改进。
+
+**      **最后，总结下来就是：首先使用bitmapData.draw()方法手动绘制你的显示对象，并把bitmapData数据保存在一个共享的缓存或静态属性上。然后显示一个bitmap来取代你原先的显示对象。实际上，这相当于写一个自定义的cacheAsBitmap功能，不同之处在于使用了共享缓存。
+
+**基准测试**
+
+**      **首先，让我们请出我们的好工具--图表！
+
+**      **我们在一系列的设备上都运行了同一个压力测试程序，结果如下表。每次测试都由包含旋转，透明度和缩放这三种变换的共同部分组成，并在保持跑满30fps的情况下不断添加Sprite显示对象。我们在相同测试条件下比较CPU渲染模式和GPU渲染模式性能。
+
+**      **您可以点击此处查看HTML版本的测试示例，就能明白我说的是什么了：[http://esdot.ca/examples/canvasTests/](http://esdot.ca/examples/canvasTests/)
+
+[![](http://blog.domlib.com/wp-content/uploads/2012/06/air3.0.jpg)](http://blog.domlib.com/wp-content/uploads/2012/06/air3.0.jpg)
+
+**      **您可以清晰地看到它们之间巨大的性能差距。同时，必须要注意到的一点，由于我们使用的仍然是共享BitmapData的位图优化技术，所以针对CPU的测试也是被较好的优化过了的。因此这并不是那种故意让CPU渲染显得性能低下的找茬的测试。
+
+**      **[更新]后来有人问我关于使用copyPixels方法的性能。copyPixels的性能将会介于以上两种方式之间。它比传统的显示列表速度快，但是比共享位图数据方式性能低（而且使用非常不灵活）。随着新的设备出现，更高分辨率的显示屏的使用，copyPixels方法的性能将会越来越落后。
+
+**代码示例**
+
+**      **代码示例好吧，说的够多了，下面上代码！
+
+**      **例子1，假设我有一个含有精美矢量雪球影片剪辑的FLA文件，已经导出了类名为SnowBallAsset。现在我想在GPU模式下以非常高的性能渲染它。
+
+    
+    [as3]
+    public class SnowBall extends Sprite
+    {
+    //声明一个静态数据变量，这个类的所有实例都可共享它。
+    protected static var data:BitmapData;
+    public var clip:Bitmap;
+    
+    public function SnowBall()
+    {
+    if(!data)
+    {
+    var sprite:Sprite = new SnowBallAsset();
+    data = new BitmapData(sprite.width, sprite.height, true, 0x0);
+    data.draw(sprite, null, null, null, null, true);
+    }
+    clip = new Bitmap(data, "auto", true);
+    addChild(clip);
+    //优化鼠标子项
+    mouseChildren = false;
+    }
+    }
+    [/as3]
+
+
+**      **现在我可以方便地生成尽可能多的SnowBall()了。它们本质上都是完全由GPU加速渲染的。在这个简单的例子里，为了让它看起来正常，要注意你的素材必须要设置一个相对于0,0点的内部坐标。（但是为了提高5倍的性能，增加的这几行代码是值得的吧？） 下一个例子里，我们将写一个相似的类。但它是可以被重用的，你只需要把你要使用的素材类名传入即可。然后，你有时候可能还希望能缩放素材，但同时保持它的显示质量。这可以很容易地在上传到GPU之前，通过多倍重新采样的方式实现。
+
+    
+    [as3]
+    public class CachedSprite extends Sprite
+    {
+    //声明一个缓存数据的静态属性
+    protected static var cachedData:Object = {};
+    public var clip:Bitmap;
+    
+    public function CachedSprite(asset:Object, scale:int = 2)
+    {
+    //检测是否已经缓存过对应的素材了
+    var data:BitmapData = cachedData[getQualifiedClassName(asset)];
+    if(!data)
+    {
+    var instance:Sprite = new asset();
+    var bounds:Rectangle = instance.getBounds(this);
+    //可选的操作，使用matrix对素材进行矩阵变换后重新采样，
+    //这样可以让它被缩放后质量还是看起来比较不错。
+    var m:Matrix = new Matrix();
+    m.translate(-bounds.x, -bounds.y);
+    m.scale(scale, scale);
+    data = new BitmapData(bounds.width * scale, bounds.height * scale, true, 0×0);
+    data = new BitmapData(instance.width, instance.height, true, 0x0);
+    data.draw(instance, m, null, null, null, true);
+    cachedData[getQualifiedClassName(asset)] = data;
+    }
+    
+    clip = new Bitmap(data, "auto", true);
+    //对Bitmap进行反向缩放，让最终效果看起来尺寸与原始一致
+    clip.scaleX = clip.scaleY = 1/scale;
+    addChild(clip);
+    //优化鼠标子项
+    mouseChildren = false;
+    }
+    }
+    [/as3]
+
+
+** **[更新] 后来因为一系列的留言评论，我已经更新了以上代码，让它也能适用于起始坐标不在(0,0)点的素材。这样能应该能避免任何截边现在了。
+
+** **现在我想创建这个类的多少实例就创建多少。第一次实例化这个类时，将会有一次绘制过程，紧接着还有一次将位图上传到GPU的过程。经过这一次实例化的过程，之后再创建的所有实例，性能上几乎都是免费的。我同样可以将它们scale到2倍大小而察觉不到任何质量损失。不知道我前面是否提到过？不止是scale，rotation和设置alpha在性能上也同样几乎是免费的。
+
+** **使用这个类的素材类型相同的所有实例将会共享同一份位图数据，只要位图数据保持缓存在GPU内，所有共享它的实例，都将运行地无比流畅，这真的就是这么简单！
+
+** **要将这项技术应用到SpriteSheet或者多帧的MovieClip上，复杂度实在是微不足道。我相信任何有两把刷子的AS程序员都不会有任何问题的。但我随后还是发一些辅助的类代码上来。
+
+** **注意：直接继承一个Bitmap作为素材显示类的方式确实非常诱人，并且还能减少显示列表多余的嵌套。但是我后来发现，在Bitmap外面包裹一层Sprite会更有好处。首先一点就是Sprite具有鼠标事件，而Bitmap没有（我也明白为什么...）。其次是，在外部包裹一层Sprite可以让你很容易地在内部重新采样位图数据，然后在内部设置Bitmap的Scale值，而父容器根本不需要关心。
+
+**内部细节**
+
+** **那么，这种方式在底层究竟是怎么运作的？
+** **1.把renderMode设置为GPU后，当一个bitmapData对象被渲染时，它将会被上传到GPU内作为一个纹理贴图处理。
+** **2.只要你保持这份bitmapData数据在内存中，纹理贴图就会一直存储在GPU上。（这正是最本质的原因）
+
+** **3.当这个纹理贴图处于GPU上时，你将会获得3至5倍的渲染性能提高！（视具体的GPU性能而异）
+
+** **4.此时Scale, Alpha, Rotation等等操作都将极度节省开销。
+
+** **这种方式的亮点之处就在于，你可以继续使用传统显示列表的强大接口。你可以让嵌套项目，缩放，旋转或者淡出都达到极高的渲染性能。这个的好处能让你非常容易地缩放你的应用或者游戏去同时适应各种尺寸屏幕的设备，同时使用标准的AS3布局逻辑。
+
+**一些陷阱**
+** **现在还有一些要点需要注意的，GPU模式确实有一些怪癖：
+
+** **1.你应该尽可能地保持你的显示列表简洁，在每个地方都尽量减少显示列表嵌套层级数
+
+** **2.要完全避免使用blendMode,它们会影响性能。(如果你必须使用blendMode，可以把它先设置到你的显示列对象上，用draw()方法把它缓存下来，然后在bitmap中渲染这个缓存位图数据)
+
+** **3.同样的要避免使用滤镜，如果你需要使用一个滤镜，直接用applyFilter()把它应用到bitmapData上，或者应用到显示对象上，再绘制出来。
+
+** **在下一篇文章里，我们将会做更多的对比测试。这次会使用含有动画的素材。我们同样也会贴出匆忙中写的一个用于测试SpriteSheet的简单类。
+
+[更新]:关于SpriteSheet的文章链接在这: [http://esdot.ca/site/2012/fast-rendering-in-air-cached-spritesheets](http://esdot.ca/site/2012/fast-rendering-in-air-cached-spritesheets)

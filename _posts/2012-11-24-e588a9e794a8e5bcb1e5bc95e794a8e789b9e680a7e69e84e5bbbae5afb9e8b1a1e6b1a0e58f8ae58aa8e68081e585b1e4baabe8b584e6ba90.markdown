@@ -1,0 +1,283 @@
+---
+author: dom
+comments: true
+date: 2012-11-24 17:42:44+00:00
+layout: post
+slug: '%e5%88%a9%e7%94%a8%e5%bc%b1%e5%bc%95%e7%94%a8%e7%89%b9%e6%80%a7%e6%9e%84%e5%bb%ba%e5%af%b9%e8%b1%a1%e6%b1%a0%e5%8f%8a%e5%8a%a8%e6%80%81%e5%85%b1%e4%ba%ab%e8%b5%84%e6%ba%90'
+title: 利用弱引用特性构建对象池及动态共享资源
+wordpress_id: 384
+categories:
+- ActionScript
+- UI框架
+tags:
+- 动态内存管理
+- 对象池
+- 弱引用
+---
+
+在我较早的一篇文章[《利用Dictionary的弱引用特性实现动态内存管理》](http://blog.domlib.com/articles/223.html)中详细介绍了使用弱引用的好处。下面贴两个工具类代码，充分利用了弱引用的特性，实现动态内存管理，既可以重用或共享对象，又不需要担心内存回收问题。
+
+废话不多说，先上代码：
+
+[Recycler.as](http://blog.domlib.com/wp-content/uploads/2012/11/Recycler.as)<!-- more -->
+
+    
+    [as3]
+    package org.flexlite.domUtils
+    {
+    	import flash.utils.Dictionary;
+    
+    	/**
+    	 * 对象缓存复用工具类，可用于构建对象池。
+    	 * 利用了Dictionary弱引用特性。一段时间后会自动回收对象。
+    	 * @author DOM
+    	 */
+    	public class Recycler
+    	{
+    		/**
+    		 * 构造函数
+    		 */		
+    		public function Recycler()
+    		{
+    		}
+    		/**
+    		 * 缓存字典
+    		 */		
+    		private var cache:Dictionary = new Dictionary(true);
+    		/**
+    		 * 缓存一个对象以复用
+    		 * @param object
+    		 */		
+    		public function push(object:*):void
+    		{
+    			cache[object] = null;
+    		}
+    		/**
+    		 * 获取一个缓存的对象
+    		 */		
+    		public function get():*
+    		{
+    			for(var object:* in cache)
+    			{
+    				delete cache[object];
+    				return object;
+    			}
+    		}
+    		/**
+    		 * 立即清空所有缓存的对象。
+    		 */		
+    		public function reset():void
+    		{
+    			cache = new Dictionary(true);
+    		}
+    	}
+    }
+    [/as3]
+
+
+这个类简单的我都不好意思贴出来。但是它在构建对象池技术时确实非常非常有用。简单解释下对象池：当你在一段时间内需要重复实例化数量巨大的相同实例时，出于性能优化考虑，你应该采用对象池技术，顾名思义就是对象用完了不直接删除，而是缓存起来，下次需要时就不用再new一个新的对象，而是从池子里取出来。这能节省巨大性能的开销。但是一般的对象池都是用数组保存的。也就是说你要设计个机制去手动删除缓存的对象列表，否则它们永远不会被回收。而什么时间去删除比较合适呢？太早了影响重用，太晚了影响内存回收。而使用弱引用则完全没有这个问题。弱引用相当于这个引用不算在引用计数里，但是你又能通过这个引用访问到它。当一个对象的外部引用为0时(当然不包括我们的弱引用啦)，FP就会标记它可以回收，注意FP并不是立即回收它。这就正好让我们可以在不影响它正常回收过程的前提下，又能解决瞬时大量对象重用的需求。而且使用这个类来实现对象池极其简单，不用任何额外的机制，你创建一个Recycler实例即可。当回收对象时就：recycler.push(object)，要取出时：object = recycler.get()。是不是太简单了？ ：)
+
+下面这个类就稍微有一点点复杂了，其实也很简单：
+
+[SharedMap.as](http://blog.domlib.com/wp-content/uploads/2012/11/SharedMap.as)
+
+    
+    [as3]
+    package org.flexlite.domUtils
+    {
+    	import flash.utils.Dictionary;
+    
+    	/**
+    	 * 具有动态内存管理功能的哈希表。
+    	 * 此类通常用于动态共享高内存占用的数据对象，比如BitmapData。
+    	 * 它类似Dictionary，使用key-value形式来存储数据。
+    	 * 但当外部对value的所有引用都断开时，value会被GC标记为可回收对象，并从哈希表移除。
+    	 * <b>注意：</b>
+    	 * 只有引用型的value才能启用动态内存管理，若value是基本数据类型(例如String,int等)时，需手动remove()它。
+    	 * @author DOM
+    	 */
+    	public class SharedMap
+    	{
+    		/**
+    		 * 构造函数
+    		 * @param groupSize 分组大小,数字越小查询效率越高，但内存占用越高。
+    		 */		
+    		public function SharedMap(groupSize:int=200)
+    		{
+    			if(groupSize<1)
+    				groupSize = 1;
+    			this.groupSize = groupSize;
+    		}
+    
+    		/**
+    		 * key缓存字典
+    		 */		
+    		private var keyDic:Dictionary = new Dictionary();
+    		/**
+    		 * 上一次的value缓存字典
+    		 */		
+    		private var lastValueDic:Dictionary;
+    		/**
+    		 * 通过值获取键
+    		 * @param value
+    		 */		
+    		private function getValueByKey(key:String):*
+    		{
+    			var valueDic:Dictionary = keyDic[key];
+    			if(!valueDic)
+    				return null;
+    			var found:Boolean = false;
+    			var value:*;
+    			for(value in valueDic)
+    			{
+    				if(valueDic[value]===key)
+    				{
+    					found = true;
+    					break;
+    				}
+    			}
+    			if(!found)
+    			{
+    				value = null;
+    				delete keyDic[key];
+    			}
+    			return value;
+    		}
+    
+    		/**
+    		 * 分组大小
+    		 */		
+    		private var groupSize:int = 200;
+    		/**
+    		 * 添加过的key的总数
+    		 */		
+    		private var totalKeys:int = 0;
+    		/**
+    		 * 设置键值映射
+    		 * @param key 键
+    		 * @param value 值
+    		 */		
+    		public function set(key:String,value:*):void
+    		{
+    			var valueDic:Dictionary = keyDic[key];
+    			if(valueDic)
+    			{
+    				var oldValue:* = getValueByKey(key);
+    				if(oldValue!=null)
+    					delete valueDic[oldValue];
+    			}
+    			else
+    			{
+    				if(totalKeys%groupSize==0)
+    					lastValueDic = new Dictionary(true);
+    				valueDic = lastValueDic;
+    				totalKeys++;
+    			}
+    			if(valueDic[value]!==undefined)//防止不同键却具有相同值被覆盖的情况
+    				valueDic = lastValueDic = new Dictionary(true);
+    			keyDic[key] = valueDic;
+    			valueDic[value] = key;
+    		}
+    		/**
+    		 * 获取指定键的值
+    		 * @param key
+    		 */		
+    		public function get(key:String):*
+    		{
+    			return getValueByKey(key);
+    		}
+    		/**
+    		 * 检测是否含有指定键
+    		 * @param key 
+    		 */		
+    		public function has(key:String):Boolean
+    		{
+    			var valueDic:Dictionary = keyDic[key];
+    			if(!valueDic)
+    				return false;
+    			var has:Boolean = false;
+    			for(var value:* in valueDic)
+    			{
+    				if(valueDic[value]===key)
+    				{
+    					has = true;
+    					break;
+    				}
+    			}
+    			if(!has)
+    				delete keyDic[key];
+    			return has;
+    		}
+    		/**
+    		 * 移除指定的键
+    		 * @param key 要移除的键
+    		 * @return 是否移除成功
+    		 */		
+    		public function remove(key:String):Boolean
+    		{
+    			var value:* = getValueByKey(key);
+    			if(value==null)
+    				return false;
+    			var valueDic:Dictionary = keyDic[key];
+    			delete keyDic[key];
+    			delete valueDic[value];
+    			return true;
+    		}
+    		/**
+    		 * 获取键名列表
+    		 */		
+    		public function get keys():Vector.
+    		{
+    			var keyList:Vector. = new Vector.();
+    			var cacheDic:Dictionary = new Dictionary();
+    			for(var key:String in keyDic)
+    			{
+    				var valueDic:Dictionary = keyDic[key];
+    				if(cacheDic[valueDic])
+    					continue;
+    				cacheDic[valueDic] = true;
+    				for each(var validKey:String in valueDic)
+    				{
+    					keyList.push(validKey);
+    				}
+    			}
+    			return keyList;
+    		}
+    		/**
+    		 * 获取值列表
+    		 */		
+    		public function get values():Array
+    		{
+    			var valueList:Array = [];
+    			var cacheDic:Dictionary = new Dictionary();
+    			for(var key:String in keyDic)
+    			{
+    				var valueDic:Dictionary = keyDic[key];
+    				if(cacheDic[valueDic])
+    					continue;
+    				cacheDic[valueDic] = true;
+    				for(var value:* in valueDic)
+    				{
+    					valueList.push(value);
+    				}
+    			}
+    			return valueList;
+    		}
+    		/**
+    		 * 刷新缓存并删除所有失效的键值。
+    		 */		
+    		public function refresh():void
+    		{
+    			var keyList:Vector. = keys;
+    			for(var key:String in keyDic)
+    			{
+    				if(keyList.indexOf(key)==-1)
+    					delete keyDic[key];
+    			}
+    		}
+    	}
+    }
+    [/as3]
+
+
+这个工具类主要用于动态共享素材资源。其实就是实现[《利用Dictionary的弱引用特性实现动态内存管理》](http://blog.domlib.com/articles/223.html)这篇文章里说的内容，只不过是增强了一下。如果完全用key-value倒转的方式来存数据，带来的问题就是每次查询都要遍历，当数据量小的时候还无所谓，数据量巨大的时候查询效率就低了。这个工具类采用了用分组的方式解决这个问题。只要在构造函数里传入分组大小即可。内部机制就是用多个Dictionary来分别存储。虽然内存上去了一点(基本可忽略)。但是能有效解决查询效率问题。最极端的情况当然是把分组大小设置为1，这样查询效率是最高的，跟原生的应该没啥区别了。内存和cpu不可兼得，权衡一个值即可。测试的时候分组设置为200左右，跟原生的查询时间差不多。所以感觉再低也没什么必要了。使用很简单：sharedMap.set(key,value),value = sharedMap.get(key)。 当做普通键值对来存储即可。不用关心底层key-value掉转的问题。

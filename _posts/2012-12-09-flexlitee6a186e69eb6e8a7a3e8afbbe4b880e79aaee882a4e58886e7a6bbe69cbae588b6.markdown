@@ -1,0 +1,230 @@
+---
+author: dom
+comments: true
+date: 2012-12-09 14:09:18+00:00
+layout: post
+slug: flexlite%e6%a1%86%e6%9e%b6%e8%a7%a3%e8%af%bb%e4%b8%80%e7%9a%ae%e8%82%a4%e5%88%86%e7%a6%bb%e6%9c%ba%e5%88%b6
+title: FlexLite框架解读(一):皮肤分离机制
+wordpress_id: 407
+categories:
+- ActionScript
+- Flash
+- FLEX
+- FlexLite
+- UI框架
+tags:
+- FlexLite
+- 框架解读
+- 皮肤分离
+---
+
+**前言**
+
+我写文章总喜欢先加上一段前言，但我坦诚这里面大部分都是废话。由于时间紧张或怕罗嗦的童鞋，请跳本能地跳过这段，你应该没有任何损失。:)
+
+这篇文章从标题看，应该会有一系列的后续文章，不出意外的话，会有的(出意外呢？凉拌)。从发布FlexLite开始,就不断有童鞋提建议。为啥不基于Flash Pro那套UI，据说也有失效验证机制啊；为啥要皮肤分离啊，直接在组件上写样式多直观；为啥要整出个addElement(),我们喜欢addChild()不喜欢addElement()啊，等等一系列的问题。提问的大多都是纯AS游戏开发或者接触Flex不多的。写了多年的纯AS，代码功底深厚，熟练使用纯代码实现各种复杂布局和样式。对Flex略有了解，但停留在性能低下的印象里。殊不知其中的数项核心架构原理，能够挽救你于水深火热的拼面板之中。所以这系列文章的最初几篇，将主要是针对这类开发者的。帮助大家快速掌握Flex架构的核心原理，扫除迁移困惑，步入高效的UI开发流程。资深Flex开发者就请绕道吧，因为你们已经知道的太多了。。。请等写到《从Flex迁移到FlexLite》的主题的时候再回来吧。(如果没有这个主题，那真心祝贺你们：对Flex开发者迁移木有成本，直接用吧。不管你信不信，反正我是快要信了)
+
+**皮肤分离机制**
+
+这个东西是Flex4才开始有的，说到Flex4，还有人说MX组件不是也可以直接设置样式吗？Spark组件包才是真正的Flex4，MX是对Flex3的兼容组件包。运行原理是完全不一样的。FlexLite是完全基于Spark的原理重写的。包括一些Spark还没实现的组件。比如TabNavigator，还有Tree(还没完成，但是会有的)。所以要看皮肤分离就不要再找错对象了：只看Spark组件。<!-- more -->
+
+要说皮肤分离，我们先来看看原先的UI面板是怎么写的，一个灰常简单的例子有助于理解：
+UIPanel.as
+
+    
+    [as3]
+    package
+    {
+    	import flash.events.MouseEvent;
+    
+    	import org.flexlite.domUI.components.Button;
+    	import org.flexlite.domUI.components.Label;
+    	import org.flexlite.domUI.components.SkinnableContainer;
+    
+    	/**
+    	 * UI面板
+    	 * @author DOM
+    	 */
+    	public class UIPanel extends SkinnableContainer
+    	{
+    		public function UIPanel()
+    		{
+    			super();
+    		}
+    		/**
+    		 * 标题文本
+    		 */		
+    		public var titleDisplay:Label;
+    		/**
+    		 * 关闭按钮
+    		 */		
+    		public var closeButton:Button;
+    		/**
+    		 * 实例化子项
+    		 */		
+    		override protected function createChildren():void
+    		{
+    			titleDisplay = new Label();
+    			titleDisplay.textColor = 0xFFFFFF;
+    			titleDisplay.text = "这个窗口的标题";
+    			addElement(titleDisplay);
+    
+    			closeButton = new Button();
+    			closeButton.right = 0;
+    			closeButton.addEventListener(MouseEvent.CLICK,onClose);
+    			addElement(closeButton);
+    		}
+    		/**
+    		 * 关闭按钮点击
+    		 */		
+    		private function onClose(event:MouseEvent):void
+    		{
+    			//do something...
+    		}
+    	}
+    }
+    [/as3]
+
+
+既然是分离，当然是至少是得有两个文件才算分离吧，皮肤分离版本应该这样写：
+
+UIPanel.as
+
+    
+    [as3]
+    package
+    {
+    	import flash.events.MouseEvent;
+    
+    	import org.flexlite.domUI.components.Button;
+    	import org.flexlite.domUI.components.Label;
+    	import org.flexlite.domUI.components.SkinnableContainer;
+    
+    	/**
+    	 * UI面板
+    	 * @author DOM
+    	 */
+    	public class UIPanel extends SkinnableContainer
+    	{
+    		public function UIPanel()
+    		{
+    			super();
+    			skinName = UIPanelSkin;
+    		}
+    		/**
+    		 * 标题文本
+    		 */		
+    		public var titleDisplay:Label;
+    		/**
+    		 * 关闭按钮
+    		 */		
+    		public var closeButton:Button;
+    		/**
+    		 * 在子项注入的时候初始附加一些属性：比如事件监听。
+    		 */		
+    		override protected function partAdded(partName:String, instance:Object):void
+    		{
+    			super.partAdded(partName,instance);
+    			if(instance==closeButton)
+    			{
+    				closeButton.addEventListener(MouseEvent.CLICK,onClose);
+    			}
+    			else if(instance==titleDisplay)
+    			{
+    				titleDisplay.text = "这个窗口的标题";
+    			}
+    		}
+    		/**
+    		 * 关闭按钮点击
+    		 */		
+    		private function onClose(event:MouseEvent):void
+    		{
+    			//do something...
+    		}
+    	}
+    }
+    [/as3]
+
+
+UIPanelSkin.as
+
+    
+    [as3]
+    package
+    {
+    	import org.flexlite.domUI.components.Button;
+    	import org.flexlite.domUI.components.Label;
+    	import org.flexlite.domUI.components.supportClasses.Skin;
+    
+    	/**
+    	 * UI面板的皮肤
+    	 * @author DOM
+    	 */
+    	public class UIPanelSkin extends Skin
+    	{
+    		public function UIPanelSkin()
+    		{
+    			super();
+    		}
+    		/**
+    		 * 标题文本
+    		 */		
+    		public var titleDisplay:Label;
+    		/**
+    		 * 关闭按钮
+    		 */		
+    		public var closeButton:Button;
+    		/**
+    		 * 实例化子项
+    		 */		
+    		override protected function createChildren():void
+    		{
+    			titleDisplay = new Label();
+    			titleDisplay.textColor = 0xFFFFFF;
+    			addElement(titleDisplay);
+    
+    			closeButton = new Button();
+    			closeButton.right = 0;
+    			addElement(closeButton);
+    		}
+    	}
+    }[/as3]
+
+
+先解释下皮肤分离的运行原理：UIPanel是逻辑组件，UIPanelSkin是皮肤组件。我们为UIPanel的skinName属性指定了UIPanelSkin类定义，把他们关联起来。当UIPanel初始化的时候，就会new一个UIPanelSkin的实例，并添加为自己的唯一子项。然后自动匹配双方的同名变量(具体匹配规则参考SkinPartUtil类)。把UIPanelSkin的closeButton和titleDisplay引用赋值到逻辑组件的对应属性上。这样在逻辑组件里就持有初始化好了的子项，我们只为需要运行时控制的子项声明同名变量，以持有其引用。子项注入的时候会调用逻辑组件的partAdded(子项名属性名，子项实例)方法，我们在这里做一些除了布局和样式以外的初始化操作，比如监听事件和设置逻辑组件定制的数据(titleDisplay.text="这个窗口的标题")。逻辑组件里只有逻辑控制代码，布局和样式完全交给皮肤组件实现，并且逻辑组件能通过同名变量直接操作皮肤的子项，就好像它们是自己的子项一样。(为了好理解，这里就先简单说这么多，还有视图状态什么的就先不讨论了)
+
+咋一看，你这是坑爹的吧？这代码不是一样嘛？还多了一个类。怎么可能更方便？莫急，待我慢慢道来。
+
+先观察下分离出来的都是些什么东西？是布局和样式。而布局和样式又是另外一个东西：项目里修改最频繁的部分。你现在看的这个例子，还只是最简单的示例，试想一下当有几十个子项要初始化和布局的时候。如果你把布局和样式以及逻辑代码耦合在一起。那你每次都要去一堆代码里找到并修改修改一个颜色或者一个位置。然后运行一次看看对不对，不对再来一遍，一遍又一遍。。。要是赶上了游戏换皮，想想都头大。反过来，当你要修改逻辑代码的时候，每次都要有意无意阅读一大堆无用的布局和样式信息才可以找到你要改的地方。
+
+所以我们把一个标准的UI组件拆成两个组件：逻辑组件和皮肤组件。逻辑组件上只写逻辑代码，皮肤上只管理子项实例化，布局和样式。Spark正是严格按照这个规范来写组件的。在MX组件里，你想设置一个组件的样式，直接操作组件的接口即可。而到了Spark，你基本上找不到任何接口。因为你找错地方了。设置样式和布局，应该去它的皮肤里。Spark组件原则上只有一个设置样式的地方，就是skinClass（在FlexLite里对应skinName，因为FlexLite支持任意类型的皮肤注入），用这个属性为它关联一个皮肤。这样做最浅显的好处是你解耦了逻辑和皮肤，写逻辑的时候，只关注逻辑功能。写皮肤的时候，只关注样式。关注点小了，自然提高了开发效率。但皮肤分离的意义绝对不是仅在这个层面上而已。
+
+如果你从头到尾都是按照这个规范做的。到换肤的时候，你就明白这样有多方便了。只需要重新指定一个新的skinName，逻辑代码一行不用修改，就可以完成组件外观的替换。这样做的另一个好处是可以共享皮肤。比如同一个外观的按钮，你只要写一个皮肤，所有按钮的skinName都可以引用它。不需要重复设置外观。引用同一个皮肤的组件，一次修改全部更新。但这还不是皮肤分离的真正好处。
+
+皮肤分离的真正好处是：做为程序员的你再也不用拼面板了！如果你使用过Flash Catalyst(很可惜，随着Flex的捐赠，它已经停止开发了)，你就会明白Adobe的良苦用心。其实在Spark组件里，皮肤根本不是手写出来的。你看过Spark组件的默认皮肤吗？全部都是绘图元素。如果你非要手写出来，我只能说大神你是我的偶像(其实本人也这么干过，后来迷途知返了)。Adobe的本意不是让你写皮肤，而是要你用Flash Catalyst自动生成，这是个神奇的工具，你在AI或者PS里画好东西，然后倒入到它里面，就可以转换成标准的皮肤类了。而这种操作完全可视化，不需要编程技能，让美工来完成就可以了。所以你只要关心你的干净整洁的逻辑组件就够了。布局样式外观什么的，给专业的美工MM们去搞吧。
+
+根据这套机制分离出来的皮肤组件，可以发现它基本上全是静态化的，所以非常适合用XML来描述。我们可以把上面的UIPanelSkin.as改成下面的这个xml描述文件：
+
+    
+    [xml]
+     
+    <dx:skin width="400" xmlns:dx="http://www.flexlite.org/dxml/2012" height="300"> 
+        <dx:label textcolor="0xFFFFFF" id="titleDisplay"></dx:label> 
+        <dx:button right="0" id="closeButton"></dx:button> 
+    </dx:skin>
+    [/xml]
+
+
+Flex开发者一定对这个非常熟悉，这不就是传说中的MXML了吗？我只是改了下命名空间为FlexLite的dx="http://www.flexlite.org/dxml/2012"，写法格式与MXML完全一致。
+
+是不是直观多了？我猜你们中大多数肯定说不是。。。因为我们都是杯具的程序猿。代码永远最亲切-_-！但是这个文件不是给你看的。你把皮肤用这种方式表示，下次策划或者美工来找你说，帮我改下这个的颜色，那个的位置，你就可以直接丢给他这个xml，一句话：自个儿改去。:)
+
+另一方面，表示成xml对于写工具来说也非常有意义。xml描述显示列表有天生的优势。我们可以在工具里提供各种可视化操作，然后让工具自动生成xml。这就是所谓的可视化编辑器了。
+
+这个xml最终当然是要变成as我们才能用的。在FlexLite的Extended库中提供了DXMLCompiler，可以直接把xml转换为as文件。这里注意一点，DXMLCompiler不允许你在xml里嵌入as逻辑代码，否则就分离没有意义了。Flex里是因为它的文档类必须是MXML，所以才必然会出现as和xml混排，实际上相当于它的逻辑组件也是用了xml来写。但我们在纯as工程里其实是不需要这种步的，也不利于解耦。所以建议你不要这么用。当然，框架里只提供了思路。具体实现你可以改写DXMLCompiler，实现你自己定制的任何功能。你也可以把整套可视化编辑，编译，素材管理整合到一个工具里。总之，只有分离出来，一切才皆有可能。
+
+关于可视化工具的一些建议。如果所在团队有能力当然是开发的越完善越好。足够完善的工具能够让程序员完全脱离拼面板的工作，还是很心动的吧？折中的方案，是程序员自己用，就可以写的比较简单了。但是同样能很大程度上提高生产力。即使没有工具，我还是建议要做皮肤分离，起码能让你的项目适应多变的UI需求。不用每次换肤都深入一堆逻辑代码里改的焦头烂额。耦合性小了，还有可以共享的优势。
+
+终于写完了这篇，希望对大家理解框架能有所帮助。 ：) 下一篇打算写点关三阶段失效验证和自动布局的原理。这部分内容对于纯as开发者来说应该是最困惑的地方了。弄懂了就那么回事，没弄懂之前，调试都无从下手。欲知后事如何，且听下回分解。
+
+[返回FlexLite相关文章目录](http://blog.domlib.com/uiframework)

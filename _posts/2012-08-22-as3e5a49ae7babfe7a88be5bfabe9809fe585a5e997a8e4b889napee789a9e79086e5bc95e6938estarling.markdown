@@ -1,0 +1,459 @@
+---
+author: dom
+comments: true
+date: 2012-08-22 17:06:50+00:00
+layout: post
+slug: as3%e5%a4%9a%e7%ba%bf%e7%a8%8b%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8%e4%b8%89nape%e7%89%a9%e7%90%86%e5%bc%95%e6%93%8estarling
+title: AS3多线程快速入门(三):NAPE物理引擎+Starling[译]
+wordpress_id: 345
+categories:
+- 3D
+- ActionScript
+- Flash
+tags:
+- Flash Player11.4
+- Nape
+- Starling
+- 多线程
+---
+
+<blockquote>原文链接：[http://esdot.ca/site/2012/intro-to-as3-workers-part-3-nape-physics-starling](http://esdot.ca/site/2012/intro-to-as3-workers-part-3-nape-physics-starling)</blockquote>
+
+
+
+
+**[更新]Adobe在11.4正式发布的最后一刻移除了ByteArray.shareable功能的支持，推迟到11.5版本再发布。为了解决这个问题，源码已经被我更新过了。但这里还是留下完整的示例代码，因为它能最终会正常运行的。**
+
+在《AS3多线程快速入门》系列教程的[第一部分](http://esdot.ca/site/2012/intro-to-as3-workers-hello-world)中，我们研究了AS3 Worker的基本原理，包括多种通信方式，还展示了一个简单例子：Hello World Worker。
+
+在系列教程的[第二部分](http://esdot.ca/site/2012/intro-to-as3-workers-part-2-image-processing)中，我们研究了在一个在独立线程里执行图像处理的例子。
+
+在这教程的最后一部分里，我将介绍如何在一个单独的线程运行你的物理引擎，然后我们再混合一点Starling作为锦上添花的东西。
+首先，让我看看我们将要做的东西是什么：<!-- more -->
+
+多线程版本演示地址:[http://esdot.ca/examples/NapeWorkerExample.html](http://esdot.ca/examples/NapeWorkerExample.html)
+
+作为对比，让我再看看传统的单线程版本执行效果：
+
+单线程版本演示地址:[http://esdot.ca/examples/NapeLegacyExample.html](http://esdot.ca/examples/NapeLegacyExample.html)
+
+在大多数电脑上，你的CPU满负荷工作情况下，单线程版本的测试将难以达到45fps。即使你有一个性能超级高的CPU，让帧率接近了60fps，你的CPU仍然是满负荷的。你将没有任何空余的时间片来处理游戏中的其他操作。相比之下，使用多线程的版本，在CPU上几乎没有时间占用，它仅花了小于1ms的时间在反序列化数据和一系列向Starling推送数据的操作上。有这么多的空闲时间它都可以抽根烟休息一下了！
+
+**概述**
+
+首先简要概述下它是如何运行的：
+
+1.Nape的物理模拟将会完全运行在Worker线程内部。
+2.当主线程想要添加一个物理对象时，就调用Worker线程。
+3.每一帧，Worker线程都会复制所有物理对象的位置数据到共享的ByteArray里。
+4.主线从ByteArray对象里读取位置数据，并使用它们来更新屏幕上的Sprite对象位置。
+
+我们先从文档类开始，看看发送给Worker线程的信息。然后再看下Worker内部实际运行的物理引擎代码。
+
+**文档类代码**
+
+第一步是创建Worker和一些MessageChannels对象，让我们能够通信。
+
+到现在，你应该对基于Worker的应用程序的代码模板比较熟悉了吧：
+
+    
+    [as3]
+    public function NapeWorkerExample()
+    {
+    registerClassAlias("SpritePosition", SpritePosition);
+    registerClassAlias("Rectangle", Rectangle);
+    
+    if(Worker.current.isPrimordial){
+    
+    	stage.frameRate = 60;
+    
+            //创建worker 
+    	worker = WorkerDomain.current.createWorker(loaderInfo.bytes);
+    
+    	//创建共享的MessageChannel对象
+    	channelToMain = worker.createMessageChannel(Worker.current);
+    	channelToMain.addEventListener(flash.events.Event.CHANNEL_MESSAGE, onMessageFromWorker);
+    
+    	channelToWorker  = Worker.current.createMessageChannel(worker);
+    
+    	worker.setSharedProperty("channelToMain", channelToMain);
+    	worker.setSharedProperty("channelToWorker", channelToWorker);
+    
+    	//创建共享的ByteArray对象
+    	positionBytes = new ByteArray();
+    	positionBytes.shareable = true;
+    	worker.setSharedProperty("positionBytes", positionBytes);
+    
+    	//启动worker
+    	worker.start();
+    
+    	//等待Starling启动...
+    	_starling = new Starling(starling.display.Sprite, this.stage);
+    	_starling.addEventListener("rootCreated", function(){
+    
+    		StarlingRoot = Starling.current.root as starling.display.Sprite;
+    
+    		//创建UI
+    		initUi();
+    
+    		//创建物理世界
+    		buildWalls();
+    		buildPyramid();
+    
+    		//添加事件监听
+    		stage.addEventListener(flash.events.Event.ENTER_FRAME, onEnterFrame);
+    		stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+    		stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+    
+    	});
+    	_starling.start();
+    } 
+    else {
+    	stage.frameRate = 60;
+    	napeWorker = new NapeWorker();
+    }
+    }
+    [/as3]
+
+
+文档类的第一部分是标准的Worker初始化操作，创建Worker，MessageChannels等对象。然后我们创建了一些基本的UI来监控统计数据，接着初始化Starling。
+
+这里还要注意下对registerClassAlias()方法的调用，如果我们想要传递任何非原生数据类型时，这个调用就非常重要。所以记着，你需要在线程的两端都调用registerClassAlias()方法，要包含你传递的任何对象的类。如果你不调用这个，传输的数据将会被作为原始Object对象。
+
+提示：请注意worker线程和主线程可以有不同的帧率，酷！
+
+完成了Starling初始化后，我们用buildWalls()和buildPyramid()方法来创建物理场景。我们现在看看这两个方法。
+
+在buildWalls()里，我们让worker线程添加一些静态物体，并传递给它一个形状数组。
+
+    
+    [as3]
+    protected function buildWalls():void {
+    	var thickness:int = 50;
+    	var width:int = stage.stageWidth;
+    	var height:int = stage.stageHeight;
+    
+            //为墙体创建rectangle列表
+    	var shapes:Vector. = new [
+    		new Rectangle(0, 0, -thickness, height), //左
+    		new Rectangle(width, 0, thickness, height), //右
+    		new Rectangle(0, height - thickness, width, thickness) //下
+    	];
+    
+    	//通知worker添加这些物体到物理引擎
+    	channelToWorker.send(MessageType.ADD_STATIC_BODY);
+    	channelToWorker.send(shapes);
+    }
+    [/as3]
+
+
+你会注意到我声明了一个简单的MessageType类来定义我使用的各种消息类型：
+
+    
+    [as3]
+    package
+    {
+    public class MessageType
+    {
+    
+            public static var ADD_BOX:String = "addBox";
+            public static var ADD_STATIC_BODY:String = "addStaticBody";
+    }
+    }
+    [/as3]
+
+
+在buildPyramid()里，我们让worker线程创建了大约800个动态物体，并添加到世界中。我们还为它们创建了图形化的表示对象，并作为Starling图片添加到显示列表。
+
+    
+    [as3]
+    //通过多次调用addBox()创建一个"金字塔"...
+    protected function buildPyramid():void{
+    	var boxw:Number = 25;
+    	var boxh:Number = 15;
+    	var height:int = 40;
+    
+    	for(var y:int = 1; y<height+1; y++) {
+    		for(var x:int = 0; x<y; x++) {
+    			var pos:SpritePosition = new SpritePosition();
+    			pos.x = stage.stageWidth/2 - boxw*(y-1)/2 + x*boxw;
+    			pos.y = stage.stageHeight - boxh/2 - boxh*(height-y)*0.98;
+    			pos.width = boxw;
+    			pos.height = boxh;
+    			addBox(pos);
+    		}
+    	}    
+    }
+    
+    protected function addBox(data:SpritePosition):void {
+    	//创建Sprite对象并添加到starling root
+    	var graphicSprite:Crate = new Crate(data.width, data.height);
+    	StarlingRoot.addChildAt(graphicSprite as starling.display.DisplayObject, 0);
+    
+            //根据id存储graphicSprite
+    	data.id = graphicSprite.id;
+    	spritesById[data.id] = graphicSprite
+    
+            //通知worker用这些id创建物体，并设置位置和尺寸
+    	channelToWorker.send(MessageType.ADD_BOX);
+    	channelToWorker.send(data);
+    }
+    [/as3]
+
+
+主线程的最后一部分，我们现在要研究的是触发拖拽操作的代码。要实现这个，我们需要做几个简单的事：
+
+1.注入主线程舞台的mouseX和mouseY到Worker线程。这是唯一的能让worker线程获取当前鼠标位置的方法。
+2.通知worker线程开始拖拽和停止拖拽操作。
+
+为了实现这个，我们要添加一个ENTER_FRAME处理函数，当然也要有MOUSE_UP和MOUSE_DOWN事件处理函数。
+
+    
+    [as3]
+    protected function onEnterFrame(event:flash.events.Event):void {
+    	//传入mouseX和mouseY的值给worker线程，让它能获取鼠标下的任何东西
+    	worker.setSharedProperty("mouseX", mouseX);
+    	worker.setSharedProperty("mouseY", mouseY);
+    }
+    
+    protected function onMouseDown(event:MouseEvent):void {
+    	channelToWorker.send(MessageType.START_DRAG);
+    }
+    
+    protected function onMouseUp(event:MouseEvent):void {
+    	channelToWorker.send(MessageType.STOP_DRAG);
+    }
+    [/as3]
+
+
+在这个类里要做的最后一件事是从ByteArray里读取物理对象的位置列表，并把这些值应用到Starling图片上。在做这个之前，我们需要先看看包含Nape物理引擎的线程本身。
+
+**NapeWorker.as**
+
+在worker线程的构造函数里，我们将做以下事：
+
+1.获取共享的ByteArray和MessageChannel对象引用。
+2.初始化我们的Nape空间。
+3.初始化一个hand对象用来拖拽。
+4.添加一个监听函数来响应来自主线程的消息。
+
+    
+    [as3]
+    public function NapeWorker(){
+    	//初始化Nape
+    	space = new Space(new Vec2(0, 600));
+    
+    	//创建hand
+    	hand = new PivotJoint(space.world,space.world,new Vec2(), new Vec2());
+    	hand.active = false;
+    	hand.space = space;
+    	hand.stiff = false;
+    	hand.frequency = 4;
+    	hand.maxForce = 60000;
+    
+    	prevTime = getTimer();
+    	addEventListener(Event.ENTER_FRAME, onEnterFrame);
+    
+    	//初始化worker
+    	this.worker = Worker.current;
+    
+    	registerClassAlias("SpritePosition", SpritePosition);
+    	registerClassAlias("Rectangle", Rectangle);
+    
+    	positionBytes = worker.getSharedProperty("positionBytes");
+    
+    	channelToMain = worker.getSharedProperty("channelToMain");
+    	channelToWorker = worker.getSharedProperty("channelToWorker");
+    	channelToWorker.addEventListener(Event.CHANNEL_MESSAGE, onMessageFromMain);
+    }
+    [/as3]
+
+
+再次注意下，我们必须调用registerClassAlias()方法来支持自定义的数据类（即使是一些原生的类比如Rectangle也需要）。
+
+下一步是实现一个事件监听函数来响应来自主线程的消息。
+
+    
+    [as3]
+    protected function onMessageFromMain(event:Event):void {
+    	var msg:String = channelToWorker.receive();
+    
+    	switch(msg){
+    
+    		case MessageType.ADD_BOX:
+    			var position:SpritePosition = channelToWorker.receive(true);
+    			addBox(position.id, position.x, position.y, position.width, position.height);
+    			break;
+    
+    		case MessageType.ADD_STATIC_BODY:
+    			var shapes:Vector. = channelToWorker.receive();
+    			addStaticBody(shapes);
+    			break;
+    
+    		case MessageType.START_DRAG:
+    			drag(true);
+    			break;
+    
+    		case MessageType.STOP_DRAG:
+    			drag(false)
+    			break;
+    
+    	}
+    }
+    
+    public function drag(value:Boolean):void {
+    	if(value){
+    		var p:Vec2 = new Vec2(hand.anchor1.x, hand.anchor1.y);
+    		var bodies:BodyList = space.bodiesUnderPoint(p);
+    		if(bodies.length > 0){
+    			var b:Body = bodies.shift();
+    			hand.body2 = b;
+    			hand.anchor2 = b.worldToLocal(p);
+    			hand.active = true;
+    		}
+    	} else {
+    		hand.active = false;
+    	}
+    }
+    [/as3]
+
+
+你可以看到，这个函数就像是一个处理事件的路由器一样，根据事件类型，调用内部对应的方法。
+
+你可以看到拖拽相关的处理函数，它们的代码已经很容易达到自说明了。你也可以看到我们之前调用过的addBox() andaddStaticBody()方法。
+
+让我们先看看addStaticBody()方法，其中涉及了一些简单的Nape接口。
+
+    
+    [as3]
+    /**
+     * 添加一个静态物体(墙，地板等，可以包含多个形状)
+     **/
+    protected function addStaticBody(shapes:Vector.):void {
+    	var border:Body = new Body(BodyType.STATIC);
+    	for(var i:int = 0; i < shapes.length; i++){
+    		var rect:Rectangle = shapes[i];
+    		border.shapes.add(new Polygon(Polygon.rect(rect.x, rect.y, rect.width, rect.height)));
+    	}
+    	border.space = space;
+    }
+    [/as3]
+
+
+然后是addBox()方法，它稍微有点复杂(请阅读行内注释)。
+
+    
+    [as3]
+    /**
+     * 添加一个新的“盒子”物体
+     **/
+    protected function addBox(id:String, x:int, y:int, w:int, h:int):void {
+            //创建一个新的动态物体并添加到Nape space
+    	var block:Polygon = new Polygon(Polygon.box(w, h));
+    	var box:Body = new Body(BodyType.DYNAMIC);
+    	box.shapes.add(block);
+    	box.position.setxy(x, y);
+    	box.space = space;
+    
+            //注入一个dummySprite到这个物体，让我们能容易地追踪到它的位置
+    	var dummySprite:NapeSprite = new NapeSprite(id);
+    	sprites.push(dummySprite);
+    	box.graphic = dummySprite;
+    }
+    [/as3]
+
+
+接下来是程序真正的关键部分了，我们将序列化所有的位置数据然后发回给主线程。这需要非常快的速度，如果反序列化1000个物体需要花费8ms时间的话，我们在主线程已经延误了一半的渲染时间。
+
+我们已经知道共享的ByteArray对象是最快的共享内存的方式。但是怎么使用它才最好呢？
+
+最简单也最优雅的方式是简单地调用下byteArray.writeObject(myArrayOfObjects)方法即可。不幸的是，这个方法非常慢，使用这个方法，我们序列化5000个对象需要大约6ms。
+
+最快的方式是手动封装你的数据到ByteArray，我们直接写入Number和String的值到ByteArray对象，而不是写入每个Object。使用这个方式，我们可以在1ms内序列化5000个对象！
+
+    
+    [as3]
+    
+    /**
+     * 复制NapeSprites的位置信息到byteArray
+     **/
+    protected function onEnterFrame(event:Event):void {
+            var et:int = Math.min(50, getTimer() - prevTime);
+    	prevTime = getTimer();
+    	space.step(et * .001, 10, 10);
+    
+    	var ba:ByteArray = positionBytes;
+    	ba.position = 0;
+    	for(var i:int = 0, l:int = sprites.length; i < l; i++){
+    		ba.writeInt(sprites[i].id.length);
+    		ba.writeUTFBytes(sprites[i].id);
+    		ba.writeInt(sprites[i].x);
+    		ba.writeInt(sprites[i].y);
+    		ba.writeInt(sprites[i].rotation);
+    	}
+    
+            //通知主线程PHYSICS_COMPLETE
+    	channelToMain.send(MessageType.PHYSICS_COMPLETE);
+    
+    	//为拖拽操作更新hand的位置
+    	hand.anchor1.setxy(worker.getSharedProperty("mouseX"), worker.getSharedProperty("mouseY"));
+    
+    }
+    
+    [/as3]
+
+
+很简单对吧!?我们只要一个接一个地把数据封装进ByteArray，然后按同样的顺序读取它们就行了。哈，这是有点简单，但是速度快的跟狗屎一样！
+
+提示：在存储String值时，我们必须先存储String的长度，这样另一端调用byteArray.readUTFBytes()时才能把长度信息传递过去。
+
+你可以看到，如果worker线程向主线程发送消息动作。在主线程的监听函数里，我们将监听PHYSICS_COMPLETE消息，然后运行的基本上是上面函数的一个相反版本：
+
+    
+    [as3]
+    
+    protected function onMessageFromWorker(event:flash.events.Event):void {
+    	var msg:String = channelToMain.receive();
+    
+    	if(msg == MessageType.PHYSICS_COMPLETE){
+    
+    		//从byteArray对象里读取更新后的位置信息
+    		var s:Crate;
+    		var ba:ByteArray = positionBytes;
+    		positionBytes.position = 0;
+    		var id:String;
+    
+    		while(positionBytes.bytesAvailable){
+    			//从byteArray对象里读取SpriteID
+    			id = ba.readUTFBytes(ba.readInt());
+    
+    			//更新在屏幕上的Sprite位置
+    			s = spritesById[id];
+    			s.x = ba.readInt();
+    			s.y = ba.readInt();
+    			s.rotation = ba.readInt() * Math.PI / 180;
+    		}
+    	} 
+    
+    }
+    
+    [/as3]
+
+
+这就是它！你现在就拥有了一个完整的，运行在另一个线程的Stage3D里的物理系统!
+
+当然，这只是个简单的示例程序，还有一大把的高级功能你可以添加的，比如：
+
+1.添加更多形状/物体类型的功能。
+2.移除/拆分条目的功能
+3.增加关键节点的功能
+4.等等
+
+在这里下载测试项目的源代码：
+[NapeWorkerExample](http://esdot.ca/site/wp-content/uploads/2012/08/NapeWorkerExample.zip)
+
+注：你将会看到一些附加的处理日志记录和异常捕获的代码，和非常多的try/catch语句块。在Flash Builder4.6里你没法在worker线程里运行trace或者查看运行时错误。所以这变得有必要了：在所有地方都使用try/catch，然后再发送stackTrace数据回主线程，让它打印出来。
+
+在FB4.7里这些问题应该全部会被解决，你应该能正常地debug。
+
+我非常希望获知大家对这篇文章的反馈。它对我来说是一片挺长的文章的，并且我不太确定是否把所有事情都说明白了，它对你们起到帮助了吗？
