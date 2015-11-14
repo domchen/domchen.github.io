@@ -3,7 +3,7 @@ author: dom
 date: 2012-04-10 13:01:20+00:00
 layout: post
 title: Flash Player播放音频导致的极其隐秘的线上Bug
-id: 213
+pid: 213
 tags:
 - Flash player
 - Sound

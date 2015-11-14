@@ -3,7 +3,7 @@ author: dom
 date: 2014-07-27 15:47:26+00:00
 layout: post
 title: 写在EgretWing出来之前
-id: 706
+pid: 706
 tags:
 - Egret GUI
 - EgretWing

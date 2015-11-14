@@ -3,7 +3,7 @@ author: dom
 date: 2013-03-17 06:28:59+00:00
 layout: post
 title: FlexLite框架解读(四):自动布局详解
-id: 452
+pid: 452
 tags:
 - FlexLite
 - 框架解读

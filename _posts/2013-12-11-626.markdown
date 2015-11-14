@@ -3,7 +3,7 @@ author: dom
 date: 2013-12-11 15:16:18+00:00
 layout: post
 title: Flash Builder代码配色主题
-id: 626
+pid: 626
 tags:
 - Flash Builder
 - 主题

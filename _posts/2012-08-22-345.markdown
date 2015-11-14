@@ -3,7 +3,7 @@ author: dom
 date: 2012-08-22 17:06:50+00:00
 layout: post
 title: AS3多线程快速入门(三):NAPE物理引擎+Starling[译]
-id: 345
+pid: 345
 tags:
 - Flash Player11.4
 - Nape

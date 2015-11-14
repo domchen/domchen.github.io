@@ -3,7 +3,6 @@ author: dom
 date: 2015-02-07 05:55:31+00:00
 layout: post
 title: 一个最精简的MVC系统
-id: 744
 pid: 744
 tags:
 - MVC

@@ -3,7 +3,7 @@ author: dom
 date: 2012-11-24 17:42:44+00:00
 layout: post
 title: 利用弱引用特性构建对象池及动态共享资源
-id: 384
+pid: 384
 tags:
 - 动态内存管理
 - 对象池

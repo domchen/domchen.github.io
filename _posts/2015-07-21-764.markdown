@@ -3,7 +3,7 @@ author: dom
 date: 2015-07-21 15:58:28+00:00
 layout: post
 title: Lark新特性解读（二）
-id: 764
+pid: 764
 tags:
 - Lark
 - 屏幕适配

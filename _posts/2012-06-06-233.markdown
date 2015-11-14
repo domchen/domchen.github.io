@@ -3,7 +3,7 @@ author: dom
 date: 2012-06-06 06:25:19+00:00
 layout: post
 title: 用Flex实现网页自动登录和文件抓取
-id: 233
+pid: 233
 tags:
 - 网页抓取
 - 自动登录

@@ -3,7 +3,7 @@ author: dom
 date: 2012-04-21 09:16:41+00:00
 layout: post
 title: Flash Builder概要分析BUG
-id: 217
+pid: 217
 ---
 
 一句话结束：Flash Builder里运行概要分析不能使用单机调试版的FP去测试，得到的数据总是内存没有被回收,Web版的和Air版的调试都没问题,并且若你的工作空间路径包含中文，概要分析将无法运行。

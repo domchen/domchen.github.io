@@ -3,7 +3,7 @@ author: dom
 date: 2013-05-24 05:25:10+00:00
 layout: post
 title: Flash中64位无符号整型的实现方法
-id: 485
+pid: 485
 tags:
 - 64位无符号整型
 - flash

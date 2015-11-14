@@ -3,7 +3,7 @@ author: dom
 date: 2014-01-12 14:23:50+00:00
 layout: post
 title: FlexLite Studio使用教程(一):编辑器初始化
-id: 639
+pid: 639
 tags:
 - FlexLite
 - FlexLite Studio

@@ -3,7 +3,7 @@ author: dom
 date: 2012-02-26 06:32:58+00:00
 layout: post
 title: 《软件框架设计的艺术》读书笔记
-id: 171
+pid: 171
 tags:
 - 依赖注入
 - 软件框架设计的艺术

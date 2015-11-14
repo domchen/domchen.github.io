@@ -3,7 +3,7 @@ author: dom
 date: 2012-04-22 03:20:07+00:00
 layout: post
 title: 利用Dictionary的弱引用特性实现动态内存管理
-id: 223
+pid: 223
 tags:
 - Dictionary
 - 位图数据共享

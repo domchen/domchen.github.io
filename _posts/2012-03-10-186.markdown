@@ -3,7 +3,7 @@ author: dom
 date: 2012-03-10 13:40:34+00:00
 layout: post
 title: 镂空遮罩
-id: 186
+pid: 186
 tags:
 - 新手引导
 - 混合模式

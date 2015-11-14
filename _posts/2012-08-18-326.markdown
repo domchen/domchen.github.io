@@ -3,7 +3,7 @@ author: dom
 date: 2012-08-18 07:17:17+00:00
 layout: post
 title: AS3多线程快速入门(二):图像处理[译]
-id: 326
+pid: 326
 tags:
 - Flash Player11.4
 - 多线程

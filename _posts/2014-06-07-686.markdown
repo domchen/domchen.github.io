@@ -3,7 +3,7 @@ author: dom
 date: 2014-06-07 15:37:19+00:00
 layout: post
 title: 使用Chrome调试NodeJS脚本
-id: 686
+pid: 686
 tags:
 - NodeJS
 - 调试

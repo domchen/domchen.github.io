@@ -3,7 +3,7 @@ author: dom
 date: 2013-04-29 04:48:47+00:00
 layout: post
 title: 线上发行版捕获全局异常日志的方法
-id: 475
+pid: 475
 tags:
 - 全局异常
 - 堆栈信息

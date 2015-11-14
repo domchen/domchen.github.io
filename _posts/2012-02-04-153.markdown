@@ -3,7 +3,7 @@ author: dom
 date: 2012-02-04 20:43:58+00:00
 layout: post
 title: 用addElement()方法替代addChild()?
-id: 153
+pid: 153
 tags:
 - Flex
 - UI

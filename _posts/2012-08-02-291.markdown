@@ -3,7 +3,7 @@ author: dom
 date: 2012-08-02 15:01:55+00:00
 layout: post
 title: AIR 3.0针对移动设备的高性能渲染方案(二)[译]
-id: 291
+pid: 291
 tags:
 - AIR3.0
 - GPU加速

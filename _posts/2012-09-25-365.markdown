@@ -3,7 +3,7 @@ author: dom
 date: 2012-09-25 03:45:44+00:00
 layout: post
 title: AIR3.3及3.4版本BitmapData.encode()的Bug
-id: 365
+pid: 365
 tags:
 - AIR3.3
 - AIR3.4

@@ -3,7 +3,7 @@ author: dom
 date: 2012-10-18 09:08:52+00:00
 layout: post
 title: 关于"Flash运行时阻塞"
-id: 376
+pid: 376
 tags:
 - Flash运行时阻塞
 - 加载

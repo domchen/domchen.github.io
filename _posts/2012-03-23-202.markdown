@@ -3,7 +3,7 @@ author: dom
 date: 2012-03-23 13:10:28+00:00
 layout: post
 title: 关于使用接口解耦模块的一点体会
-id: 202
+pid: 202
 tags:
 - 接口
 - 解耦

@@ -53,7 +53,7 @@ layout: default
                     style="text-align: right"
                     data-thread-key="{{page.id}}" data-title="{{page.title}}"
                     data-images="{{ site.url }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}"
-                    data-content="{{ content | strip_html | truncate:80 }} | Hux Blog，@Hux黄玄 的个人博客"
+                    data-content="{{ content | strip_html | truncate:80 }} | DomLib，@dom 的个人博客"
                     data-url="{{site.url}}{{page.url}}">
                     <div class="ds-share-inline">
                       <ul  class="ds-share-icons-16">
@@ -88,7 +88,7 @@ layout: default
                 {% if site.useDuoshuo %}
                 <!-- 多说评论框 start -->
                 <div class="comment">
-                    <div class="ds-thread" data-thread-key="{{page.pid}}" data-title="{{page.title}}" data-url="{{site.url}}{{page.url}}"></div>
+                    <div class="ds-thread" data-thread-key="{% if page.pid %}{{page.pid}}{% else %}{{page.id}}{% endif %}" data-title="{{page.title}}" data-url="{{site.url}}{{page.url}}"></div>
                 </div>
                 <!-- 多说评论框 end -->
                 {% endif %}

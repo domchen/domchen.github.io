@@ -3,7 +3,7 @@ author: dom
 date: 2015-08-01 12:42:39+00:00
 layout: post
 title: TypeScript进阶玩法
-id: 836
+pid: 836
 tags:
 - TypeScript
 - 进阶

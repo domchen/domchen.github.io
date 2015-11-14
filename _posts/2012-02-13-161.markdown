@@ -3,7 +3,7 @@ author: dom
 date: 2012-02-13 16:43:28+00:00
 layout: post
 title: 命令行编译工具mxmlc
-id: 161
+pid: 161
 tags:
 - mxmlc
 - UI
