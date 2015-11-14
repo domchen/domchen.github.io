@@ -18,7 +18,7 @@ github_username:    domchen
 
 # Build settings
 highlighter: pygments
-permalink: pretty
+permalink: /articles/:title.html
 paginate: 20
 exclude: ["less","node_modules","Gruntfile.js","package.json","README.md","LICENSE","Gemfile","Gemfile.lock"]
 anchorjs: true      # if you want to customize anchor. check out line:129 of `post.html`
