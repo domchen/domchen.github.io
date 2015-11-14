@@ -3,6 +3,7 @@ layout: page
 title: "About"
 description: "Hey, this is Dom."
 header-img: "img/about-bg.jpg"
+pid: 124
 ---
 
 <div class="zh">
@@ -45,7 +46,7 @@ Email ：dom@domlib.com<p>
 {% if site.useDuoshuo %}
 <!-- 多说评论框 start -->
     <div class="comment">
-        <div class="ds-thread" data-thread-key="{{page.id}}" data-title="{{page.title}}" data-url="{{site.url}}/about"></div>
+        <div class="ds-thread" data-thread-key="{% if page.pid %}{{page.pid}}{% else %}{{page.id}}{% endif %}" data-title="{{page.title}}" data-url="{{site.url}}/about"></div>
     </div>
 <!-- 多说评论框 end -->
 
