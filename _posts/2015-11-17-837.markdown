@@ -8,6 +8,7 @@ date: 2015-11-17 19:29:01
 tags:
 - WebGL
 - getContext
+- 附加参数
 ---
 
 最近在研究WebGL渲染，本想用模板缓冲实现类似Canvas2d上的clip()接口，绘制时裁切指定范围。可是发现无论怎么设置模板缓冲都没法正确显示。最后谷歌了一下才发现只设置`gl.enable(gl.STENCIL_TEST)`是不够的，在获取WebGL的context时还需要额外设置参数才能开启模板缓冲功能：
