@@ -1,0 +1,38 @@
+---
+author: dom
+layout: post
+published: true
+pid: 837
+title: WebGL获取Context时的附加参数
+date: 2015-11-17 19:29:01
+tags:
+- WebGL
+- getContext
+---
+
+最近在研究WebGL渲染，本想用模板缓冲实现类似Canvas2d上的clip()接口，绘制时裁切指定范围。可是发现无论怎么设置模板缓冲都没法正确显示。最后谷歌了一下才发现只设置`gl.enable(gl.STENCIL_TEST)`是不够的，在获取WebGL的context时还需要额外设置参数才能开启模板缓冲功能：
+
+```
+var gl = canvas.getContext("webgl",{stencil:true});
+```
+有这么个额外参数，而且是传入Object，那同理是不是还应该有其他的未知参数？可是各种书上都没找到有介绍这些额外参数的。最后在MDN的文档里找到了：[HTMLCanvasElement.getContext()](https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLCanvasElement/getContext) 其中列举了如下参数：
+
+* alpha: 指示Canvas是否含有透明通道，若设置为false不透明，如果Canvas下叠加了其他元素时，可以在绘制时提升一些性能
+* antialias: 绘制时是否开启抗锯齿功能
+* depth: 是否开启深度缓冲功能
+* failIfMajorPerformanceCaveat: true表示当系统性能较低时，将不允许创建context。也就是是getContext()返回null。
+* premultipliedAlpha: 这个功能做图形渲染的应该很熟悉，将alpha通道预先乘入rgb通道内，以提高合成性能，一两句话说不清，具体自己谷歌一下吧。
+* preserveDrawingBuffer: 是否保留缓冲区数据，如果你需要读取像素，或者复用绘制到主屏幕上的图像（实现脏矩形局部刷新），需要开启这个，否则浏览器在发生新的绘制操作的时候，有可能清空以前的数据。
+* stencil: 是否开启模板缓冲功能
+
+另外，`WebGLRenderingContext`上还有个`getContextAttributes()`方法,用这个方法能够获取当前context上的所有附加属性状态值。我用这个方法在chrome上输出了这些属性的默认值如下：
+
+* alpha: true
+* antialias: true
+* depth: true
+* failIfMajorPerformanceCaveat: false
+* premultipliedAlpha: true
+* preserveDrawingBuffer: false
+* stencil: false
+
+可以看到我们的模板缓冲stencil功能果然是默认false关闭的。最后，stackoverflow上说，`getContextAttributes()`还有个其他作用，因为getContext()方法你传递stencil为true进去，浏览器并不一定会就给你开启stencil，要检查当前stencil是否开启，还要用`getContextAttributes()`获取属性对象，检查一下上面的属性是否为true。
