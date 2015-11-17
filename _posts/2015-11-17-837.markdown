@@ -2,9 +2,7 @@
 author: dom
 layout: post
 published: true
-pid: 837
 title: WebGL获取Context时的附加参数
-date: 2015-11-17 19:29:01
 tags:
 - WebGL
 - getContext
