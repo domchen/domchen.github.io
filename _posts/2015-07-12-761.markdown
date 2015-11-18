@@ -15,7 +15,7 @@ tags:
 
 
 
-[![lark](/uploads/2015/07/lark.png)](/uploads/2015/07/lark.png)
+[![lark](/uploads/2015/07/lark-150x150.png)](/uploads/2015/07/lark-150x150.png)
 
 Lark的产品页：[http://www.egret.com/products-lark](http://www.egret.com/products-lark)
 Github开源地址：[https://github.com/egret-labs/Lark](https://github.com/egret-labs/Lark)
