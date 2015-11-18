@@ -22,7 +22,7 @@ tags:
 
 你可以在下面简单看看我们要做的是什么。这个是没有使用workers的版本，你可以看到：在位图处理过程中Slider完全锁定了无法移动。
 
-<p><object id="test1" width="650" height="400" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"><param name="src" value="http://blog.domlib.com/wp-content/uploads/2012/08/ImageWorkerExample_NoWorker.swf" /><param name="pluginspage" value="http://www.adobe.com/go/getflashplayer" /><embed id="test1" width="650" height="400" type="application/x-shockwave-flash" src="http://blog.domlib.com/wp-content/uploads/2012/08/ImageWorkerExample_NoWorker.swf" pluginspage="http://www.adobe.com/go/getflashplayer" /></object></p>
+<p><object id="test1" width="650" height="400" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"><param name="src" value="/uploads/2012/08/ImageWorkerExample_NoWorker.swf" /><param name="pluginspage" value="http://www.adobe.com/go/getflashplayer" /><embed id="test1" width="650" height="400" type="application/x-shockwave-flash" src="/uploads/2012/08/ImageWorkerExample_NoWorker.swf" pluginspage="http://www.adobe.com/go/getflashplayer" /></object></p>
 
 注:如果你看不见这个SWF程序，检查下你是否已经下载了[Flash Player11.4](http://labs.adobe.com/technologies/flashplatformruntimes/flashplayer11-4/)。如果使用的是谷歌浏览器，别忘了要[禁用老版本的插件](http://www.howtogeek.com/howto/16705/disable-the-old-adobe-flash-plugin-in-google-chrome/)。
 
@@ -30,7 +30,7 @@ tags:
 
 下面是同一个演示程序，但是使用了Worker。你可以看到它的UI渲染流畅地保持在30fps。
 
-<p><object id="test2" width="650" height="400" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"><param name="src" value="http://blog.domlib.com/wp-content/uploads/2012/08/ImageWorkerExample.swf" /><param name="pluginspage" value="http://www.adobe.com/go/getflashplayer" /><embed id="test2" width="650" height="400" type="application/x-shockwave-flash" src="http://blog.domlib.com/wp-content/uploads/2012/08/ImageWorkerExample.swf" pluginspage="http://www.adobe.com/go/getflashplayer" /></object></p>
+<p><object id="test2" width="650" height="400" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"><param name="src" value="/uploads/2012/08/ImageWorkerExample.swf" /><param name="pluginspage" value="http://www.adobe.com/go/getflashplayer" /><embed id="test2" width="650" height="400" type="application/x-shockwave-flash" src="/uploads/2012/08/ImageWorkerExample.swf" pluginspage="http://www.adobe.com/go/getflashplayer" /></object></p>
 
 注:如果你看不见这个SWF程序，检查下你是否已经下载了[Fash Player11.4](http://labs.adobe.com/technologies/flashplatformruntimes/flashplayer11-4/)。如果使用的是谷歌浏览器，别忘了要[禁用老版本的插件](http://www.howtogeek.com/howto/16705/disable-the-old-adobe-flash-plugin-in-google-chrome/)。
 
