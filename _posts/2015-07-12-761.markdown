@@ -10,6 +10,8 @@ tags:
 - 脏矩形渲染
 ---
 
+<blockquote>更新: Lark项目的新特性现已全面合并到Egret Engine 2.5+中，不再独立维护，Lark GUI（Swan）扩展库，对应Egret Engine 2.5+中的EUI扩展库。</blockquote>
+
 ## **什么是Lark?**
 
 
@@ -17,7 +19,6 @@ tags:
 
 [![lark](/uploads/2015/07/lark-150x150.png)](/uploads/2015/07/lark-150x150.png)
 
-Lark的产品页：[http://www.egret.com/products-lark](http://www.egret.com/products-lark)
 Github开源地址：[https://github.com/egret-labs/Lark](https://github.com/egret-labs/Lark)
 
 Lark 是一款基于 HTML5 技术构建跨平台移动 Web 应用，微站和富媒体广告营销的交互应用框架。Lark和Egret同属白鹭时代旗下的两款开源产品，今后会并行发展：Egret主要面向游戏行业，而Lark主要面向应用开发行业。并行发展能够让两个产品更加专注在细分领域，根据特定开发需求实现针对性优化。目前Lark只发布了框架源码部分，第一个版本重在提供一个精简高效的渲染核心，除了专门为应用开发精简或优化的部分，其他大部分API跟Egret都比较类似。但随着后续版本迭代，各种工具集和扩展库逐步丰富起来，两个产品的差距也会越来越大。这系列文章主要面向已经熟悉Egret的开发者，重点在于解读Lark相对Egret所引入的新特性，让部分开发者能快速上手Lark。更加详细的教程文档，也会在最近几周内陆续开放出来。可以关注此页面：[https://github.com/egret-labs/Lark/tree/master/docs](https://github.com/egret-labs/Lark/tree/master/docs) 。

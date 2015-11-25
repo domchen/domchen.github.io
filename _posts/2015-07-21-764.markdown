@@ -9,6 +9,7 @@ tags:
 - 屏幕适配
 - 新特性解读
 ---
+<blockquote>更新: Lark项目的新特性现已全面合并到Egret Engine 2.5+中，不再独立维护，Lark GUI（Swan）扩展库，对应Egret Engine 2.5+中的EUI扩展库。</blockquote>
 
 这篇文章接着上一篇[《Lark新特性解读（一）》](http://blog.domlib.com/articles/761.html)，继续解读Lark核心库新特性的后半部分。
 
