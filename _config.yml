@@ -60,7 +60,7 @@ friends: [
         title: "N神的研究所",
         href: "http://nshen.net/"
     },{
-        title: "ZRong's blog",
+        title: "zrong's blog",
         href: "http://zengrong.net/"
     },{
         title: "FeatherJ",
@@ -77,8 +77,5 @@ friends: [
     },{
         title: "纸片儿",
         href: "http://xzper.com/"
-    },{
-        title: "城市拓荒者",
-        href: "http://city-10.com/"
     }
 ]
