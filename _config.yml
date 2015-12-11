@@ -48,7 +48,7 @@ useGoogleAnalysis: false     # TODO
 # Sidebar settings
 sidebar: true
 sidebar-featured-tags: true
-sidebar-about-description: "卖代码的小黄人。"
+sidebar-about-description: "dom真的不是HTML里的DOM..."
 sidebar-avatar: /img/avatar-dom.jpg     # use absolute URL.
 
 # Friends
