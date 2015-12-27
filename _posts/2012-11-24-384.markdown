@@ -1,5 +1,4 @@
 ---
-author: dom
 date: 2012-11-24 17:42:44+00:00
 layout: post
 title: 利用弱引用特性构建对象池及动态共享资源

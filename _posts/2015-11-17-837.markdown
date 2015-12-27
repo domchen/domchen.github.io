@@ -1,5 +1,4 @@
 ---
-author: dom
 layout: post
 published: true
 title: WebGL获取Context时的附加参数

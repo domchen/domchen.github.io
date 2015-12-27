@@ -1,5 +1,4 @@
 ---
-author: dom
 date: 2013-08-23 15:43:49+00:00
 layout: post
 title: FlexLite框架解读(五):SystemManager

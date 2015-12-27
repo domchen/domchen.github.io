@@ -1,5 +1,4 @@
 ---
-author: dom
 layout: post
 published: true
 title: 区分TS中的namespace和module

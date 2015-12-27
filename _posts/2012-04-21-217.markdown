@@ -1,5 +1,4 @@
 ---
-author: dom
 date: 2012-04-21 09:16:41+00:00
 layout: post
 title: Flash Builder概要分析BUG

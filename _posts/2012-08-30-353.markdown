@@ -1,5 +1,4 @@
 ---
-author: dom
 date: 2012-08-30 14:44:34+00:00
 layout: post
 title: 关于多帧影片剪辑的bug,初始化尺寸含有随机小数

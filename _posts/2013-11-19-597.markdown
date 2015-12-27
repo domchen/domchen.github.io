@@ -1,5 +1,4 @@
 ---
-author: dom
 date: 2013-11-19 03:24:21+00:00
 layout: post
 title: FlexLite游戏UI解决方案

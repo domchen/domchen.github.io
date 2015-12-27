@@ -1,5 +1,4 @@
 ---
-author: dom
 date: 2014-11-29 10:48:37+00:00
 layout: post
 title: AS3类在第一行报override错误解决方法

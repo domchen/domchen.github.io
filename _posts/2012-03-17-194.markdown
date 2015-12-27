@@ -1,5 +1,4 @@
 ---
-author: dom
 date: 2012-03-17 07:43:21+00:00
 layout: post
 title: 一次只关注一个点，迭代开发
