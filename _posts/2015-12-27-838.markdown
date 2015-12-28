@@ -9,10 +9,8 @@ tags:
 ---
 
 从TypeScript 0.9的beta版本就开始用它了，很有意思的地方它自身的编译器也是用TS写的，只要想起这个就会陷入深深的递归。。。这几天有时间去研究了一下TS的编译器项目，想看看官方是如何用TS组织一个nodejs命令行项目的。突然发现一直用了很久的module关键字全都变成了namespace，赶紧查了一下文档是这么说的：
-> **A note about terminology:**
-It's important to note that in TypeScript 1.5, the nomenclature has changed.
-"Internal modules" are now "namespaces".
-"External modules" are now simply "modules", as to align with [ECMAScript 2015](http://www.ecma-international.org/ecma-262/6.0/)'s terminology, (namely that `module X {` is equivalent to the now-preferred `namespace X {`).
+
+ **A note about terminology:** It's important to note that in TypeScript 1.5, the nomenclature has changed. "Internal modules" are now "namespaces"."External modules" are now simply "modules", as to align with [ECMAScript 2015](http://www.ecma-international.org/ecma-262/6.0/)'s terminology, (namely that `module X {` is equivalent to the now-preferred `namespace X {`).
 
 详细的文档链接在此处：[Namespaces and Modules](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Namespaces%20and%20Modules.md) 。顺便还发现了个TS的中文翻译站点，质量还不错：[命名空间和模块](https://zhongsp.gitbooks.io/typescript-handbook/content/doc/handbook/Namespaces%20and%20Modules.html)
 
