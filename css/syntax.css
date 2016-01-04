@@ -13,6 +13,12 @@
   white-space: pre;       // forces <code> to respect <pre> formatting
 }
 
+.anchorjs-link {
+  display:none;
+}
+
+
+
 
 /*
  * GitHub style for Pygments syntax highlighter, for use with Jekyll
