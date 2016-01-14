@@ -40,8 +40,8 @@ useShare: true      # use Comment only. seeing the Share component is depend on 
 
 # Todo: Analysis settings
 # Please set your own analysis account in `head.html`(Baidu) and `default.html`(QQ)
-useBaiduAnalysis: true
-useTencentAnalysis: false
+useBaiduAnalysis: false
+useTencentAnalysis: true
 useGoogleAnalysis: false     # TODO
 
 
