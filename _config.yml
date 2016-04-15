@@ -1,10 +1,10 @@
 # Site settings
-title: DomLib
+title: iDom
 header-img: img/home-bg.jpg
-email: dom@domlib.com
+email: dom@idom.me
 description: "关注移动游戏 Html5 Flash UI框架"
 baseurl: ""
-url: "http://blog.domlib.com"
+url: "http://www.idom.me"
 
 
 # SNS settings
