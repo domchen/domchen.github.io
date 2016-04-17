@@ -17,6 +17,7 @@ github_username:    domchen
 
 
 # Build settings
+gems: [jekyll-paginate]
 highlighter: pygments
 permalink: /articles/:title.html
 paginate: 20
