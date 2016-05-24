@@ -18,7 +18,7 @@ github_username:    domchen
 
 # Build settings
 gems: [jekyll-paginate]
-highlighter: pygments
+highlighter: rouge
 permalink: /articles/:title.html
 paginate: 20
 exclude: ["less","node_modules","Gruntfile.js","package.json","README.md","LICENSE","Gemfile","Gemfile.lock"]
