@@ -49,7 +49,7 @@ useGoogleAnalysis: false     # TODO
 # Sidebar settings
 sidebar: true
 sidebar-featured-tags: true
-sidebar-about-description: "dom真的不是HTML里的DOM..."
+sidebar-about-description: "Dom真的不是HTML里的DOM..."
 sidebar-avatar: /img/avatar-dom.jpg     # use absolute URL.
 
 # Friends
