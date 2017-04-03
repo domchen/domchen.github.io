@@ -61,7 +61,7 @@ layout: default
 
 
                 {% if site.useDisqus %}
-                <div id="disqus_thread" class="ds-thread" data-thread-key="{% if page.pid %}{{page.pid}}{% else %}{{page.id}}{% endif %}" data-url="{{site.url}}/about"></div>
+                <div id="disqus_thread" class="ds-thread" data-thread-key="{% if page.pid %}{{page.pid}}{% else %}{{page.id}}{% endif %}" data-url="{{site.url}}{{page.url}}"></div>
                 {% endif %}
 
                 <!-- friends -->
