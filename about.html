@@ -43,8 +43,8 @@ Email ：dom@idom.me<p>
 </div>
 
 
-{% if site.useDuoshuo %}
-<div id="disqus_thread" data-thread-key="{% if page.pid %}{{page.pid}}{% else %}{{page.id}}{% endif %}" data-url="{{site.url}}/about"></div>
+{% if site.useDisqus %}
+<div id="disqus_thread" class="ds-thread" data-thread-key="{% if page.pid %}{{page.pid}}{% else %}{{page.id}}{% endif %}" data-url="{{site.url}}/about"></div>
 <script>
      var disqus_config = function () {
         var container = document.getElementById("disqus_thread");

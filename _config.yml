@@ -33,10 +33,9 @@ kramdown:
   input: GFM        # use Github Flavored Markdown !important
 
 
-# Duoshuo settings
-# please set your own DuoShuo account in `post.html` and `about.html`
-useDuoshuo: true    # use both Comment and Share
-useShare: true      # use Comment only. seeing the Share component is depend on Comment so we can NOT use share only.
+# Disqus settings
+# please set your own Disqus account in `post.html` and `about.html`
+useDisqus: true
 
 
 # Todo: Analysis settings
