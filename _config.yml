@@ -4,7 +4,7 @@ header-img: img/home-bg.jpg
 email: dom@idom.me
 description: "关注移动游戏 Html5 Flash UI框架"
 baseurl: ""
-url: "http://www.idom.me"
+url: "https://idom.me"
 
 
 # SNS settings
@@ -55,7 +55,7 @@ sidebar-avatar: /img/avatar-dom.jpg     # use absolute URL.
 friends: [
     {
         title: "Bindiry",
-        href: "http://junnan.org/"
+        href: "https://junnan.org/"
     },{
         title: "N神的研究所",
         href: "http://nshen.net/"
@@ -64,7 +64,7 @@ friends: [
         href: "http://imzc.me/"
     },{
         title: "zrong's blog",
-        href: "http://zengrong.net/"
+        href: "https://zengrong.net/"
     },{
         title: "FeatherJ",
         href: "http://featherj.org/"

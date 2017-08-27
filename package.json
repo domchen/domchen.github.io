@@ -2,7 +2,7 @@
     "name": "Dom-blog",
     "title": "iDom",
     "version": "1.0.0",
-    "homepage": "http://domchen.github.io",
+    "homepage": "https://idom.me",
     "author": "Dom Chen",
     "devDependencies": {
         "grunt": "~0.4.5",
